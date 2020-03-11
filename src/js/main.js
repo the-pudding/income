@@ -43,7 +43,7 @@ function init() {
   // kick off graphic code
   graphic.init();
   // load footer stories
-  footer.init();
+  // footer.init();
 }
 
 init();
