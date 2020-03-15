@@ -4,6 +4,7 @@ import isMobile from "./utils/is-mobile";
 import linkFix from "./utils/link-fix";
 import graphic from "./graphic";
 import footer from "./footer";
+import guessMovement from "./guessMovement.js";
 
 const $body = d3.select("body");
 let previousWidth = 0;
