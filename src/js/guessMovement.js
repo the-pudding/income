@@ -7,8 +7,8 @@ let guessData = [20, 20, 20, 20, 20];
 
 // dimensions
 const margin = {top: 20, bottom: 40, left: 38, right: 0};
-let width = 600 - margin.left - margin.right;
-let height = 300 - margin.top - margin.bottom;
+let width = $container.node().offsetWidth - margin.left - margin.right;
+let height = $container.node().offsetHeight - margin.top - margin.bottom;
 
 // scales
 const scaleX = d3.scaleBand()
@@ -20,6 +20,8 @@ const scaleX = d3.scaleBand()
 const scaleY = d3.scaleLinear()
 	.domain([0, 100])
 	.range([height, 0]);
+
+console.log($container.node().offsetWidth, $container.node().offsetHeight)
 
 let $vis = $svg.attr('width', width + margin.left + margin.right)
 	.attr('height', height + margin.top + margin.bottom)
