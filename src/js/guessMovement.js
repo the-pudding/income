@@ -44,14 +44,32 @@ let $bars = $vis.selectAll('.brush')
 	.call($brush)
 	.call($brush.move, function(d) { return [d, 0].map(scaleY); });
 
-	// .attr('x', function(d, i) { return scaleX(i); })
-	// .attr('y', function(d, i) { return scaleY(d); })
-	// .attr('height', function(d, i) { return (scaleY(0)) - scaleY(d); })
-	// .attr('width', scaleX.bandwidth())
-	// .style('fill', '#d2d2d2');
+// get rid of handle at the bottom of the bars
+$vis.selectAll('.handle--s').remove();
 
-function brushMove() {}
-function brushEnd() {}
+// change cursor from the move one to regular auto
+$vis.selectAll('.selection').attr('cursor', 'auto');
+$vis.selectAll('.overlay').attr('cursor', 'auto');
+
+function brushMove() {
+	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely
+    if (d3.event.sourceEvent.type === "brush") return;
+    // if (!d3.event.selection) return;  // what does this do?
+
+    const newBarPos = d3.event.selection.map(scaleY.invert);  // returns an array mapping the bottom and top locations of the bar to their scaleY values
+    const brushedBar = d3.select(this).select('.selection'); //  gets the node of the bar that was brushed
+    // brushedBar.datum().value = newBarPos[0];
+	// console.log(d3.select(this));
+	console.log(newBarPos[0]); // d0[0] gets you the scaleY value of the new top of the bar
+}
+function brushEnd() {
+	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely
+    if (d3.event.sourceEvent.type === "brush") return;
+    if (!d3.event.selection) {  // in case user clicks the chart but doesn't move, so the bar doesn't completely disappear
+    	$bars.call($brush.move, function(d) { return [d, 0].map(scaleY); });
+    }
+}
+
 $vis.append('g')
 	.attr('class', 'axis axis--x')
 	.attr('transform', 'translate(0,' + height + ')')
