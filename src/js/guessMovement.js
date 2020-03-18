@@ -28,17 +28,30 @@ let $vis = $svg.attr('width', width + margin.left + margin.right)
 	.append('g')
 	.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-let $bars = $vis.selectAll('.bar')
+let $brush = d3.brushY()
+	.extent(function(d, i) {
+		return [[scaleX(i), 0],[scaleX(i) + scaleX.bandwidth(), height]];
+	})
+	.on('brush', brushMove)
+	.on('end', brushEnd);
+
+let $bars = $vis.selectAll('.brush')
 	.data(guessData)
 	.enter()
-	.append('rect')
-	.attr('class', 'bar')
-	.attr('x', function(d, i) { return scaleX(i); })
-	.attr('y', function(d, i) { return scaleY(d); })
-	.attr('height', function(d, i) { return (scaleY(0)) - scaleY(d); })
-	.attr('width', scaleX.bandwidth())
-	.style('fill', '#d2d2d2');
+	.append('g')
+	.attr('class', 'brush')
+	.append('g')
+	.call($brush)
+	.call($brush.move, function(d) { return [d, 0].map(scaleY); });
 
+	// .attr('x', function(d, i) { return scaleX(i); })
+	// .attr('y', function(d, i) { return scaleY(d); })
+	// .attr('height', function(d, i) { return (scaleY(0)) - scaleY(d); })
+	// .attr('width', scaleX.bandwidth())
+	// .style('fill', '#d2d2d2');
+
+function brushMove() {}
+function brushEnd() {}
 $vis.append('g')
 	.attr('class', 'axis axis--x')
 	.attr('transform', 'translate(0,' + height + ')')
