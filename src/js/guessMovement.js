@@ -1,6 +1,7 @@
 const $section = d3.select('.guessMovement');
 const $container = $section.select('figure');
 const $svg = $container.select('svg');
+const $warningMsg = $container.select('.warningMsg');
 
 const answerData = []; // fill in with actual numbers later
 let guessData = [{levels: 0, share: 20},
@@ -76,7 +77,15 @@ function brushEnd() {
     const brushedLevel = brushedBar.datum().levels;
     guessData[brushedLevel].share = newShare;
 
-	// console.log(guessData);
+	updateWarningMsg();
+}
+
+function updateWarningMsg() {
+	const sum = d3.sum(guessData, d => d.share);
+	const diff = 100 - Math.round(sum);
+	let msg = diff + "% of families unaccounted for";
+
+	$warningMsg.text(msg);
 }
 
 $vis.append('g')
