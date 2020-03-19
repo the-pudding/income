@@ -37,7 +37,7 @@ let $brush = d3.brushY()
 	.extent(function(d, i) {
 		return [[scaleX(d.levels), 0],[scaleX(d.levels) + scaleX.bandwidth(), height]];
 	})
-	// .on('brush', brushMove)
+	.on('brush', brushMove)
 	.on('end', brushEnd);
 
 let $bars = $vis.selectAll('.brush')
@@ -56,18 +56,11 @@ $vis.selectAll('.handle--s').remove();
 $vis.selectAll('.selection').attr('cursor', 'auto');
 $vis.selectAll('.overlay').attr('cursor', 'auto');
 
-// function brushMove() {
-// 	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely
-//     if (d3.event.sourceEvent.type === "brush") return;
-//     // if (!d3.event.selection) return;  // what does this do?
-// }
-
-function brushEnd() {
+function brushMove() {
 	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely
     if (d3.event.sourceEvent.type === "brush") return;
-    if (!d3.event.selection) {  // in case user clicks the chart but doesn't move, so the bar doesn't completely disappear
-    	$bars.call($brush.move, function(d) { return [d.share, 0].map(scaleY); });
-    }
+    if (!d3.event.selection) return;  // what does this do?
+
     const newBarPos = d3.event.selection.map(scaleY.invert);  // returns an array mapping the bottom and top locations of the bar to their scaleY values
     const newShare = newBarPos[0];
     const brushedBar = d3.select(this).select('.selection'); //  gets the node of the bar that was brushed
@@ -80,12 +73,22 @@ function brushEnd() {
 	updateWarningMsg();
 }
 
+function brushEnd() {
+	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely
+    if (d3.event.sourceEvent.type === "brush") return;
+    if (!d3.event.selection) {  // in case user clicks the chart but doesn't move, so the bar doesn't completely disappear
+    	$bars.call($brush.move, function(d) { return [d.share, 0].map(scaleY); });
+    }
+}
+
 function updateWarningMsg() {
 	const sum = d3.sum(guessData, d => d.share);
 	const diff = 100 - Math.round(sum);
 	let msg = diff + "% of families unaccounted for";
 
 	$warningMsg.text(msg);
+
+	// if diff < 1, activate the "Submit" button
 }
 
 $vis.append('g')
