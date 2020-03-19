@@ -3,7 +3,11 @@ const $container = $section.select('figure');
 const $svg = $container.select('svg');
 
 const answerData = []; // fill in with actual numbers later
-let guessData = [20, 20, 20, 20, 20];
+let guessData = [{levels: 0, share: 20},
+				 {levels: 1, share: 20},
+				 {levels: 2, share: 20},
+				 {levels: 3, share: 20},
+				 {levels: 4, share: 20}];
 
 // dimensions
 const margin = {top: 20, bottom: 40, left: 38, right: 0};
@@ -21,7 +25,7 @@ const scaleY = d3.scaleLinear()
 	.domain([0, 100])
 	.range([height, 0]);
 
-console.log($container.node().offsetWidth, $container.node().offsetHeight)
+// console.log($container.node().offsetWidth, $container.node().offsetHeight)
 
 let $vis = $svg.attr('width', width + margin.left + margin.right)
 	.attr('height', height + margin.top + margin.bottom)
@@ -30,7 +34,7 @@ let $vis = $svg.attr('width', width + margin.left + margin.right)
 
 let $brush = d3.brushY()
 	.extent(function(d, i) {
-		return [[scaleX(i), 0],[scaleX(i) + scaleX.bandwidth(), height]];
+		return [[scaleX(d.levels), 0],[scaleX(d.levels) + scaleX.bandwidth(), height]];
 	})
 	.on('brush', brushMove)
 	.on('end', brushEnd);
@@ -42,7 +46,7 @@ let $bars = $vis.selectAll('.brush')
 	.attr('class', 'brush')
 	.append('g')
 	.call($brush)
-	.call($brush.move, function(d) { return [d, 0].map(scaleY); });
+	.call($brush.move, function(d) { return [d.share, 0].map(scaleY); });
 
 // get rid of handle at the bottom of the bars
 $vis.selectAll('.handle--s').remove();
@@ -55,19 +59,23 @@ function brushMove() {
 	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely
     if (d3.event.sourceEvent.type === "brush") return;
     // if (!d3.event.selection) return;  // what does this do?
-
-    const newBarPos = d3.event.selection.map(scaleY.invert);  // returns an array mapping the bottom and top locations of the bar to their scaleY values
-    const brushedBar = d3.select(this).select('.selection'); //  gets the node of the bar that was brushed
-    // brushedBar.datum().value = newBarPos[0];
-	// console.log(d3.select(this));
-	console.log(newBarPos[0]); // d0[0] gets you the scaleY value of the new top of the bar
 }
 function brushEnd() {
 	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely
     if (d3.event.sourceEvent.type === "brush") return;
     if (!d3.event.selection) {  // in case user clicks the chart but doesn't move, so the bar doesn't completely disappear
-    	$bars.call($brush.move, function(d) { return [d, 0].map(scaleY); });
+    	$bars.call($brush.move, function(d) { return [d.share, 0].map(scaleY); });
     }
+    const newBarPos = d3.event.selection.map(scaleY.invert);  // returns an array mapping the bottom and top locations of the bar to their scaleY values
+    const newShare = newBarPos[0];
+    const brushedBar = d3.select(this).select('.selection'); //  gets the node of the bar that was brushed
+    brushedBar.datum().share = newShare;
+
+    // update dataset with new value - needed so we can calculate total later
+    const brushedLevel = brushedBar.datum().levels;
+    guessData[brushedLevel].share = newShare;
+
+	console.log(guessData); // d0[0] gets you the scaleY value of the new top of the bar
 }
 
 $vis.append('g')
