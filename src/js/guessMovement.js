@@ -36,7 +36,7 @@ let $brush = d3.brushY()
 	.extent(function(d, i) {
 		return [[scaleX(d.levels), 0],[scaleX(d.levels) + scaleX.bandwidth(), height]];
 	})
-	.on('brush', brushMove)
+	// .on('brush', brushMove)
 	.on('end', brushEnd);
 
 let $bars = $vis.selectAll('.brush')
@@ -55,11 +55,12 @@ $vis.selectAll('.handle--s').remove();
 $vis.selectAll('.selection').attr('cursor', 'auto');
 $vis.selectAll('.overlay').attr('cursor', 'auto');
 
-function brushMove() {
-	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely
-    if (d3.event.sourceEvent.type === "brush") return;
-    // if (!d3.event.selection) return;  // what does this do?
-}
+// function brushMove() {
+// 	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely
+//     if (d3.event.sourceEvent.type === "brush") return;
+//     // if (!d3.event.selection) return;  // what does this do?
+// }
+
 function brushEnd() {
 	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely
     if (d3.event.sourceEvent.type === "brush") return;
@@ -75,7 +76,7 @@ function brushEnd() {
     const brushedLevel = brushedBar.datum().levels;
     guessData[brushedLevel].share = newShare;
 
-	console.log(guessData); // d0[0] gets you the scaleY value of the new top of the bar
+	// console.log(guessData);
 }
 
 $vis.append('g')
