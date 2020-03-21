@@ -1,11 +1,19 @@
 const $section = d3.select('.guessMovement');
-const $container = $section.select('figure');
-const $svg = $container.select('svg');
-const $warningMsg = $container.select('.warningMsg');
-const $interpretText = $container.select('.interpretText');
+const $guess__container = $section.select('.guess__figure');
+const $guess__svg = $guess__container.select('svg');
+const $warningMsg = $guess__container.select('.warningMsg');
+const $interpretText = $guess__container.select('.interpretText');
 const $submitBtn = $section.select('.submitBtn');
+const $answer__container = $section.select('.answer__figure');
+const $answer__svg = $answer__container.select('svg');
 
-const answerData = []; // fill in with actual numbers later
+
+const answerData = [{levels: 0, share: 0.6},
+				 	{levels: 1, share: 11.1},
+					{levels: 2, share: 44.2},
+					{levels: 3, share: 29.5},
+					{levels: 4, share: 14.5}];
+
 let guessData = [{levels: 0, share: 20},
 				 {levels: 1, share: 20},
 				 {levels: 2, share: 20},
@@ -14,8 +22,8 @@ let guessData = [{levels: 0, share: 20},
 
 // dimensions
 const margin = {top: 20, bottom: 40, left: 38, right: 0};
-let width = $container.node().offsetWidth - margin.left - margin.right;
-let height = $container.node().offsetHeight - margin.top - margin.bottom;
+let width = $guess__container.node().offsetWidth - margin.left - margin.right;
+let height = $guess__container.node().offsetHeight - margin.top - margin.bottom;
 
 // scales
 const scaleX = d3.scaleBand()
@@ -28,9 +36,9 @@ const scaleY = d3.scaleLinear()
 	.domain([0, 100])
 	.range([height, 0]);
 
-// console.log($container.node().offsetWidth, $container.node().offsetHeight)
+// console.log($guess__container.node().offsetWidth, $guess__container.node().offsetHeight)
 
-let $vis = $svg.attr('width', width + margin.left + margin.right)
+let $guess__vis = $guess__svg.attr('width', width + margin.left + margin.right)
 	.attr('height', height + margin.top + margin.bottom)
 	.append('g')
 	.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
@@ -42,7 +50,7 @@ let $brush = d3.brushY()
 	.on('brush', brushMove)
 	.on('end', brushEnd);
 
-let $bars = $vis.selectAll('.brush')
+let $bars = $guess__vis.selectAll('.brush')
 	.data(guessData)
 	.enter()
 	.append('g')
@@ -52,11 +60,11 @@ let $bars = $vis.selectAll('.brush')
 	.call($brush.move, function(d) { return [d.share, 0].map(scaleY); });
 
 // get rid of handle at the bottom of the bars
-$vis.selectAll('.handle--s').remove();
+$guess__vis.selectAll('.handle--s').remove();
 
 // change cursor from the move one to regular auto
-$vis.selectAll('.selection').attr('cursor', 'auto');
-$vis.selectAll('.overlay').attr('cursor', 'auto');
+$guess__vis.selectAll('.selection').attr('cursor', 'auto');
+$guess__vis.selectAll('.overlay').attr('cursor', 'auto');
 
 function brushMove() {
 	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely
@@ -99,7 +107,7 @@ function updateInterpretText() {
 	// need some scenarios and ways to calculate which one applies based on the current state of the graph
 }
 
-$vis.append('g')
+$guess__vis.append('g')
 	.attr('class', 'axis axis--x')
 	.attr('transform', 'translate(0,' + height + ')')
 	.call(d3.axisBottom(scaleX))
@@ -109,7 +117,7 @@ $vis.append('g')
 	.text('Levels Moved')
 	.style('fill', '#000');
 
-$vis.append('g')
+$guess__vis.append('g')
 	.attr('class', 'axis axis--y')
 	.call(d3.axisLeft(scaleY).ticks(5).tickFormat(d => d + '%'));
 
@@ -118,3 +126,41 @@ $submitBtn.on('click', showAnswer);
 function showAnswer() {
 	console.log("Show answer graph!");
 }
+
+/// draw answer graph
+let $answer__vis = $answer__svg.attr('width', width + margin.left + margin.right)
+	.attr('height', height + margin.top + margin.bottom)
+	.append('g')
+	.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+let $answer__bars = $answer__vis.selectAll('.answerBar')
+	.data(answerData)
+	.enter()
+	.append('g');
+
+$answer__bars.append('rect')
+	.attr('class', 'answerBar')
+	.attr('x', function(d) { return scaleX(d.levels); })
+	.attr('y', function(d) { return scaleY(d.share); })
+	.attr('width', scaleX.bandwidth())
+	.attr('height', function(d) { return height - scaleY(d.share); });
+
+$answer__bars.append('text')
+	.attr('class', 'answerBarLabel')
+	.attr('x', function(d) { return scaleX(d.levels) + scaleX.bandwidth()/2; })
+	.attr('y', function(d) { return scaleY(d.share) - 10; })
+	.text(function(d) { return d.share + '%'; });
+
+$answer__vis.append('g')
+	.attr('class', 'axis axis--x')
+	.attr('transform', 'translate(0,' + height + ')')
+	.call(d3.axisBottom(scaleX))
+	.append('text')
+	.attr('x', width / 2)
+	.attr('y', margin.bottom - 5)
+	.text('Levels Moved')
+	.style('fill', '#000');
+
+$answer__vis.append('g')
+	.attr('class', 'axis axis--y')
+	.call(d3.axisLeft(scaleY).ticks(5).tickFormat(d => d + '%'));
