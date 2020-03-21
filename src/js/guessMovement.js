@@ -2,6 +2,7 @@ const $section = d3.select('.guessMovement');
 const $container = $section.select('figure');
 const $svg = $container.select('svg');
 const $warningMsg = $container.select('.warningMsg');
+const $interpretText = $container.select('.interpretText');
 
 const answerData = []; // fill in with actual numbers later
 let guessData = [{levels: 0, share: 20},
@@ -64,13 +65,14 @@ function brushMove() {
     const newBarPos = d3.event.selection.map(scaleY.invert);  // returns an array mapping the bottom and top locations of the bar to their scaleY values
     const newShare = newBarPos[0];
     const brushedBar = d3.select(this).select('.selection'); //  gets the node of the bar that was brushed
-    brushedBar.datum().share = newShare;
+    brushedBar.datum().share = newShare;  // need to update the data bound to the bar in case user clicks the chart and the bar needs to be redrawn in its original position
 
     // update dataset with new value - needed so we can calculate total later
     const brushedLevel = brushedBar.datum().levels;
     guessData[brushedLevel].share = newShare;
 
 	updateWarningMsg();
+	updateInterpretText();
 }
 
 function brushEnd() {
@@ -89,6 +91,10 @@ function updateWarningMsg() {
 	$warningMsg.text(msg);
 
 	// if diff < 1, activate the "Submit" button
+}
+
+function updateInterpretText() {
+	// need some scenarios and ways to calculate which one applies based on the current state of the graph
 }
 
 $vis.append('g')
