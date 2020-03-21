@@ -3,6 +3,7 @@ const $container = $section.select('figure');
 const $svg = $container.select('svg');
 const $warningMsg = $container.select('.warningMsg');
 const $interpretText = $container.select('.interpretText');
+const $submitBtn = $section.select('.submitBtn');
 
 const answerData = []; // fill in with actual numbers later
 let guessData = [{levels: 0, share: 20},
@@ -91,6 +92,7 @@ function updateWarningMsg() {
 	$warningMsg.text(msg);
 
 	// if diff < 1, activate the "Submit" button
+	(Math.abs(diff) < 1) ? $submitBtn.classed('inactive', false) : $submitBtn.classed('inactive', true);
 }
 
 function updateInterpretText() {
@@ -110,3 +112,9 @@ $vis.append('g')
 $vis.append('g')
 	.attr('class', 'axis axis--y')
 	.call(d3.axisLeft(scaleY).ticks(5).tickFormat(d => d + '%'));
+
+$submitBtn.on('click', showAnswer);
+
+function showAnswer() {
+	console.log("Show answer graph!");
+}
