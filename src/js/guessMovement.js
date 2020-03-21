@@ -124,7 +124,7 @@ $guess__vis.append('g')
 $submitBtn.on('click', showAnswer);
 
 function showAnswer() {
-	console.log("Show answer graph!");
+	$answer__container.classed('noDisplay', false);
 }
 
 /// draw answer graph
