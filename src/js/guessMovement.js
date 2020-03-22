@@ -66,6 +66,10 @@ $guess__vis.selectAll('.handle--s').remove();
 $guess__vis.selectAll('.selection').attr('cursor', 'auto');
 $guess__vis.selectAll('.overlay').attr('cursor', 'auto');
 
+// disable ability to completely redraw the bar anywhere within its lane
+$guess__vis.selectAll('.overlay').attr('pointer-events', 'none');
+
+
 function brushMove() {
 	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely
     if (d3.event.sourceEvent.type === "brush") return;
