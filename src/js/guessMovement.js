@@ -47,8 +47,8 @@ let $brush = d3.brushY()
 	.extent(function(d, i) {
 		return [[scaleX(d.levels), 0],[scaleX(d.levels) + scaleX.bandwidth(), height]];
 	})
-	.on('brush', brushMove);
-	// .on('end', brushEnd);
+	.on('brush', brushMove)
+	.on('end', brushEnd);
 
 let $bars = $guess__vis.selectAll('.brush')
 	.data(guessData)
