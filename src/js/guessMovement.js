@@ -47,8 +47,8 @@ let $brush = d3.brushY()
 	.extent(function(d, i) {
 		return [[scaleX(d.levels), 0],[scaleX(d.levels) + scaleX.bandwidth(), height]];
 	})
-	.on('brush', brushMove)
-	.on('end', brushEnd);
+	.on('brush', brushMove);
+	// .on('end', brushEnd);
 
 let $bars = $guess__vis.selectAll('.brush')
 	.data(guessData)
@@ -57,7 +57,7 @@ let $bars = $guess__vis.selectAll('.brush')
 	.attr('class', 'brush')
 	.append('g')
 	.call($brush)
-	.call($brush.move, function(d) { return [d.share, 0].map(scaleY); });
+	.call($brush.move, function(d) { return [d.share, 0].map(scaleY); }); // this actually draws the "bars"
 
 // get rid of handle at the bottom of the bars
 $guess__vis.selectAll('.handle--s').remove();
@@ -71,7 +71,8 @@ $guess__vis.selectAll('.overlay').attr('pointer-events', 'none');
 
 
 function brushMove() {
-	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely
+	console.log(d3.event);
+	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely (but only after the first brush event has occurred)
     if (d3.event.sourceEvent.type === "brush") return;
     if (!d3.event.selection) return;  // what does this do?
 
@@ -89,7 +90,7 @@ function brushMove() {
 }
 
 function brushEnd() {
-	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely
+	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely (but only after the first brush event has occurred)
     if (d3.event.sourceEvent.type === "brush") return;
     if (!d3.event.selection) {  // in case user clicks the chart but doesn't move, so the bar doesn't completely disappear
     	$bars.call($brush.move, function(d) { return [d.share, 0].map(scaleY); });
