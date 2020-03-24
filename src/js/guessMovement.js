@@ -74,7 +74,7 @@ function brushMove() {
 	console.log(d3.event);
 	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely (but only after the first brush event has occurred)
     if (d3.event.sourceEvent.type === "brush") return;
-    if (!d3.event.selection) return;  // what does this do?
+    if (!d3.event.selection) return;  // ignore empty selections
 
     const newBarPos = d3.event.selection.map(scaleY.invert);  // returns an array mapping the bottom and top locations of the bar to their scaleY values
     const newShare = newBarPos[0];
@@ -86,15 +86,15 @@ function brushMove() {
     guessData[brushedLevel].share = newShare;
 
 	updateWarningMsg();
-	updateInterpretText();
 }
 
 function brushEnd() {
 	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely (but only after the first brush event has occurred)
     if (d3.event.sourceEvent.type === "brush") return;
-    if (!d3.event.selection) {  // in case user clicks the chart but doesn't move, so the bar doesn't completely disappear
+    if (!d3.event.selection) {  // in case user makes an empty selection by clicking, not dragging, on the chart, redraw bar at last known height so it doesn't completely disappear
     	$bars.call($brush.move, function(d) { return [d.share, 0].map(scaleY); });
     }
+	updateInterpretText();
 }
 
 function updateWarningMsg() {
@@ -110,6 +110,7 @@ function updateWarningMsg() {
 
 function updateInterpretText() {
 	// need some scenarios and ways to calculate which one applies based on the current state of the graph
+	$interpretText.text('According to you, roughly equal numbers of families move a lot as do those that move a little.');
 }
 
 $guess__vis.append('g')
@@ -132,7 +133,7 @@ function showAnswer() {
 	$answer__container.classed('noDisplay', false);
 }
 
-/// draw answer graph
+/// draw answer graph - TODO finesse this so that the bars transition from zero to the data value (i.e., "grow") after the user clicks the submit button?
 let $answer__vis = $answer__svg.attr('width', width + margin.left + margin.right)
 	.attr('height', height + margin.top + margin.bottom)
 	.append('g')
