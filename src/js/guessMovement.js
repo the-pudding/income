@@ -104,6 +104,8 @@ function updateWarningMsg() {
 
 	$warningMsg.text(msg);
 
+	$warningMsg.style('visibility', 'visible');
+
 	// if diff < 1, activate the "Submit" button
 	(Math.abs(diff) < 1) ? $submitBtn.classed('inactive', false) : $submitBtn.classed('inactive', true);
 }
@@ -131,6 +133,7 @@ $submitBtn.on('click', showAnswer);
 
 function showAnswer() {
 	$answer__container.classed('noDisplay', false);
+	// once we have actual text, also scroll the user down so that they can see the answer chart?
 }
 
 /// draw answer graph - TODO finesse this so that the bars transition from zero to the data value (i.e., "grow") after the user clicks the submit button?
