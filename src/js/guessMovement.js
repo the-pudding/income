@@ -75,24 +75,25 @@ function brushMove() {
     if (d3.event.sourceEvent.type === "brush") return;
     if (!d3.event.selection) return;  // ignore empty selections
 
+    // determine the new location of the end of the bar and map it to its value
     const newBarPos = d3.event.selection.map(scaleY.invert);  // returns an array mapping the bottom and top locations of the bar to their scaleY values
-    const newShare = newBarPos[0];
+    const newShare = Math.round(newBarPos[0]); // round to make the numbers nicer for the calculations below
 
     const brushedBar = d3.select(this).select('.selection'); //  gets the node of the bar that was brushed
     // brushedBar.datum().share = newShare;  // need to update the data bound to the bar in case user clicks the chart and the bar needs to be redrawn in its original position
     const brushedLevel = brushedBar.datum().levels;
     const oldShare = brushedBar.datum().share;
 
-    const remainder = d3.sum(guessData.filter(d => d.levels !== brushedLevel), d => d.share);
-
     // if user drags bar such that the sum of all the bars is greater than 100, prevent them from continuing to drag
+    const remainder = d3.sum(guessData.filter(d => d.levels !== brushedLevel), d => d.share);
 	if(newShare + remainder > 100) {
 		d3.select(this).call($brush.move, function(d) { return [100 - remainder, 0].map(scaleY); });
-		// console.log(guessData);
+		console.log(guessData);
 	}
     // else, update the dataset with the new value
     else {
 	    guessData[brushedLevel].share = newShare;
+	    d3.select(this).call($brush.move, function(d) { return [newShare, 0].map(scaleY); }); // snap the bar to the nearest integer
 		// const sum = d3.sum(guessData, d => d.share);
 		updateWarningMsg();
     }
