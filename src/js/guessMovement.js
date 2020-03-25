@@ -1,6 +1,7 @@
 const $section = d3.select('.guessMovement');
 const $guess__container = $section.select('.guess__figure');
 const $guess__svg = $guess__container.select('svg');
+const $instruction2 = $guess__container.select('.instruction2');
 const $warningMsg = $guess__container.select('.warningMsg');
 const $interpretText = $guess__container.select('.interpretText');
 const $submitBtn = $section.select('.submitBtn');
@@ -88,7 +89,8 @@ function brushMove() {
     const remainder = d3.sum(guessData.filter(d => d.levels !== brushedLevel), d => d.share);
 	if(newShare + remainder > 100) {
 		d3.select(this).call($brush.move, function(d) { return [100 - remainder, 0].map(scaleY); });
-		console.log(guessData);
+		// console.log(guessData);
+		$instruction2.style('visibility', 'visible');
 	}
     // else, update the dataset with the new value
     else {
@@ -114,11 +116,17 @@ function updateWarningMsg() {
 	let msg = diff + "% of families unaccounted for";
 
 	$warningMsg.text(msg);
-
 	$warningMsg.style('visibility', 'visible');
 
 	// if diff < 1, activate the "Submit" button
-	(Math.abs(diff) < 1) ? $submitBtn.classed('inactive', false) : $submitBtn.classed('inactive', true);
+	if(Math.abs(diff) < 1) {
+		$submitBtn.classed('inactive', false)
+		$instruction2.style('visibility', 'visible');
+	}
+	else {
+		$submitBtn.classed('inactive', true);
+		$instruction2.style('visibility', 'hidden');
+	}
 }
 
 function updateInterpretText() {
