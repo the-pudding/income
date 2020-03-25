@@ -77,7 +77,7 @@ function brushMove() {
 
     // determine the new location of the end of the bar and map it to its value
     const newBarPos = d3.event.selection.map(scaleY.invert);  // returns an array mapping the bottom and top locations of the bar to their scaleY values
-    const newShare = Math.round(newBarPos[0]); // round to make the numbers nicer for the calculations below
+    const newShare = Math.ceil(newBarPos[0]); // round to make the numbers nicer for the calculations below
 
     const brushedBar = d3.select(this).select('.selection'); //  gets the node of the bar that was brushed
     // brushedBar.datum().share = newShare;  // need to update the data bound to the bar in case user clicks the chart and the bar needs to be redrawn in its original position
