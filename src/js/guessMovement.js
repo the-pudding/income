@@ -71,21 +71,31 @@ $guess__vis.selectAll('.overlay').attr('pointer-events', 'none');
 
 
 function brushMove() {
-	console.log(d3.event);
 	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely (but only after the first brush event has occurred)
     if (d3.event.sourceEvent.type === "brush") return;
     if (!d3.event.selection) return;  // ignore empty selections
 
     const newBarPos = d3.event.selection.map(scaleY.invert);  // returns an array mapping the bottom and top locations of the bar to their scaleY values
     const newShare = newBarPos[0];
+
     const brushedBar = d3.select(this).select('.selection'); //  gets the node of the bar that was brushed
-    brushedBar.datum().share = newShare;  // need to update the data bound to the bar in case user clicks the chart and the bar needs to be redrawn in its original position
-
-    // update dataset with new value - needed so we can calculate total later
+    // brushedBar.datum().share = newShare;  // need to update the data bound to the bar in case user clicks the chart and the bar needs to be redrawn in its original position
     const brushedLevel = brushedBar.datum().levels;
-    guessData[brushedLevel].share = newShare;
+    const oldShare = brushedBar.datum().share;
 
-	updateWarningMsg();
+    const remainder = d3.sum(guessData.filter(d => d.levels !== brushedLevel), d => d.share);
+
+    // if user drags bar such that the sum of all the bars is greater than 100, prevent them from continuing to drag
+	if(newShare + remainder > 100) {
+		d3.select(this).call($brush.move, function(d) { return [100 - remainder, 0].map(scaleY); });
+		// console.log(guessData);
+	}
+    // else, update the dataset with the new value
+    else {
+	    guessData[brushedLevel].share = newShare;
+		// const sum = d3.sum(guessData, d => d.share);
+		updateWarningMsg();
+    }
 }
 
 function brushEnd() {
