@@ -5,7 +5,7 @@ const $family__container = $section.select('.family__figure');
 const $family__svg = $family__container.select('svg');
 
 // dimensions
-const margin = {top: 20, bottom: 40, left: 38, right: 0};
+const margin = {top: 20, bottom: 40, left: 38, right: 10};
 let width = $family__container.node().offsetWidth - margin.left - margin.right;
 let height = $family__container.node().offsetHeight - margin.top - margin.bottom;
 
@@ -63,8 +63,6 @@ loadData('line_chart_data.csv').then(result => {
 		.enter()
 		.append('path')
 		.attr('class', 'line')
-		.attr('d', d => line(d.values))
-		.style('stroke', '#000')
-		.style('fill', 'none');
+		.attr('d', d => line(d.values));
 
 }).catch(console.error);
