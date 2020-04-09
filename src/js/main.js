@@ -5,6 +5,7 @@ import linkFix from "./utils/link-fix";
 import graphic from "./graphic";
 import footer from "./footer";
 import guessMovement from "./guessMovement.js";
+import familyLines from "./familyLines.js";
 
 const $body = d3.select("body");
 let previousWidth = 0;
