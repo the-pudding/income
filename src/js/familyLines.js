@@ -59,10 +59,22 @@ loadData('line_chart_data.csv').then(result => {
 
 	// draw first line
 	$family__vis.selectAll('.line')
-		.data(dataByFamily.filter((d, i) => i === 0))
+		.data(dataByFamily.filter((d, i) => i < 20)) // just plot a subset of the data for now
 		.enter()
 		.append('path')
-		.attr('class', 'line')
-		.attr('d', d => line(d.values));
+		.attr('class', (d, i) => 'line family_' + i)
+		.attr('d', d => line(d.values))
+		.style('opacity', (d, i) => (i === 0) ? 1 : 0); // maybe draw all the lines on initial chart load but hide all of them except the first one, then when the timer starts, just unveil each line one by one (i.e., set their opacity to 1) instead of updating the data bound to the svg
+
+	let fam_num = 1;
+
+	let t = d3.interval(function(elapsed) {
+		$family__vis.select('.line.family_' + fam_num)
+			.transition(800)
+			.style('opacity', 1);
+
+		fam_num++;
+		if (fam_num === 20) t.stop();
+	}, 500);
 
 }).catch(console.error);
