@@ -22,7 +22,7 @@ const scaleY_line = d3.scaleLinear()
 	.range([height, 0]);
 
 const scaleX_hist = d3.scaleLinear()
-	// .domain([0, 100])  // need to make this dynamic
+	// .domain([0, 100])
 	.range([0, familyHist_width]);
 
 const scaleY_hist = d3.scaleBand()
@@ -132,16 +132,45 @@ loadData('line_chart_data.csv').then(result => {
 
 	let fam_num = 1;
 
+	// update histogram with first family's data
+	updateHistData(dataByFamily[0].values);
+	$bars.data(histData)
+		.transition()
+		.duration(100)
+		.attr('width', d => scaleX_hist(d.n));
+
+
+	// animate chart
 	let t = d3.interval(function(elapsed) {
+		// unhide line
 		$lines.select('.line.family_' + fam_num)
 			.transition(800)
 			.style('opacity', 1);
+
+		// update histogram
+		updateHistData(dataByFamily[fam_num].values);
+		$bars.data(histData)
+			.transition()
+			.duration(800)
+			.attr('width', d => scaleX_hist(d.n));
 
 		fam_num++;
 		if (fam_num === 10) t.stop();
 	}, 500);
 
 }).catch(console.error);
+
+function updateHistData(data) {
+	// updates the data used for the histogram (histData) with the frequencies from one additional family
+	let countsObj = countFrequency(data);
+	histData.forEach(d => {
+		if(d.quintile === 'Lower') d.n += countsObj['Lower'];
+		else if(d.quintile == 'Lower Middle') d.n += countsObj['Lower Middle'];
+		else if(d.quintile == 'Middle') d.n += countsObj['Middle'];
+		else if(d.quintile == 'Upper Middle') d.n += countsObj['Upper Middle'];
+		else if(d.quintile == 'Upper') d.n += countsObj['Upper'];
+	});
+}
 
 function countFrequency(data) {
 	// returns an object with the total number of occurrences of a quintile in the data
@@ -150,6 +179,7 @@ function countFrequency(data) {
 	let quintileCountsObj = {};
 	quintileNames.forEach(d => quintileCountsObj[d] = 0);
 
+	// populate the object with frequencies
 	data.forEach(d => {
 		if(d.quintile === '1') quintileCountsObj['Lower']++;
 		else if(d.quintile === '2') quintileCountsObj['Lower Middle']++;
