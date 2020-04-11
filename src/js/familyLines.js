@@ -11,6 +11,7 @@ let familyLines_width = $familyLines__svg.node().getBoundingClientRect().width -
 let familyHist_width = $familyHist__svg.node().getBoundingClientRect().width;
 let height = $family__container.node().offsetHeight - margin.top - margin.bottom;
 
+const quintileNames = ["Lower", "Lower Middle", "Middle", "Upper Middle", "Upper"];
 // scales
 const scaleX_line = d3.scaleLinear()
 	// .domain([0, 40])
@@ -21,15 +22,15 @@ const scaleY_line = d3.scaleLinear()
 	.range([height, 0]);
 
 const scaleX_hist = d3.scaleLinear()
-	.domain([0, 100])  // need to make this dynamic
+	// .domain([0, 100])  // need to make this dynamic
 	.range([0, familyHist_width]);
 
 const scaleY_hist = d3.scaleBand()
-	.domain(["Lower", "Lower Middle", "Middle", "Upper Middle", "Upper"])
+	.domain(quintileNames)
 	.range([height, 0]);
 
 const colorScale = d3.scaleOrdinal()
-	.domain(["Lower", "Lower Middle", "Middle", "Upper Middle", "Upper"])
+	.domain(quintileNames)
 	.range(["#f9cdce", "#fbdddd", "#fcf5db", "#e1f5ea", "#d4f1df"]);
 
 const line = d3.line()
@@ -41,11 +42,11 @@ const line = d3.line()
 // console.log($guess__container.node().offsetWidth, $guess__container.node().offsetHeight)
 
 // initial data for the histogram
-let histData = [{quintile: 'Lower', n: 10},
-	{quintile: 'Lower Middle', n: 10},
-	{quintile: 'Middle', n: 10},
-	{quintile: 'Upper Middle', n: 10},
-	{quintile: 'Upper', n: 10}];
+let histData = [{quintile: 'Lower', n: 0},
+	{quintile: 'Lower Middle', n: 0},
+	{quintile: 'Middle', n: 0},
+	{quintile: 'Upper Middle', n: 0},
+	{quintile: 'Upper', n: 0}];
 
 // set up line chart
 let $familyLines__vis = $familyLines__svg.attr('width', familyLines_width + margin.left + margin.right)
@@ -97,14 +98,18 @@ let $bars = $familyHist__vis.selectAll('.bar')
 	.style('fill', d => colorScale(d.quintile));
 
 loadData('line_chart_data.csv').then(result => {
-	console.log(result);
+	// console.log(result);
 	// nest data because that's the structure d3 needs to make line charts
 	let dataByFamily = d3.nest()
 		.key(d => d.id)
 		.entries(result);
 
+	// set scale domains
 	scaleX_line.domain([0, d3.max(result, d => +d.year)]).nice();
-	// console.log(dataByFamily);
+	let counts = countFrequency(result);
+	let countsArray = objToArray(counts);
+	scaleX_hist.domain([0, d3.max(countsArray, d => d.n)]);
+	// console.log(dataByFamily[0]);
 
 	// append axis for debugging purposes
 	// $familyLines__vis.append('g')
@@ -137,3 +142,31 @@ loadData('line_chart_data.csv').then(result => {
 	}, 500);
 
 }).catch(console.error);
+
+function countFrequency(data) {
+	// returns an object with the total number of occurrences of a quintile in the data
+
+	// set up an object to hold the counts
+	let quintileCountsObj = {};
+	quintileNames.forEach(d => quintileCountsObj[d] = 0);
+
+	data.forEach(d => {
+		if(d.quintile === '1') quintileCountsObj['Lower']++;
+		else if(d.quintile === '2') quintileCountsObj['Lower Middle']++;
+		else if(d.quintile === '3') quintileCountsObj['Middle']++;
+		else if(d.quintile === '4') quintileCountsObj['Upper Middle']++;
+		else if(d.quintile === '5') quintileCountsObj['Upper']++;
+	})
+
+	return quintileCountsObj;
+}
+
+function objToArray(obj) {
+	// turns the object with quintile frequency counts into an array that d3 prefers
+	var quintileArray = [];
+	quintileArray = Object.keys(obj).map(key => {
+		return {quintile: key, n: obj[key]};
+	});
+
+	return quintileArray;
+}
