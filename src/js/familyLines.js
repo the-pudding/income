@@ -2,24 +2,31 @@ import loadData from './load-data'
 
 const $section = d3.select('.familyLines');
 const $family__container = $section.select('.family__figure');
-const $family__svg = $family__container.select('svg');
+const $familyLines__svg = $family__container.select('svg.familyLines_svg');
+const $familyHist__svg = $family__container.select('svg.familyBars_svg');
 
 // dimensions
-const margin = {top: 20, bottom: 40, left: 140, right: 10};
-let width = $family__container.node().offsetWidth - margin.left - margin.right;
+const margin = {top: 20, bottom: 40, left: 140, right: 0};
+let familyLines_width = $familyLines__svg.node().getBoundingClientRect().width - margin.left - margin.right;
+let familyHist_width = $familyHist__svg.node().getBoundingClientRect().width;
 let height = $family__container.node().offsetHeight - margin.top - margin.bottom;
 
 // scales
 const scaleX_line = d3.scaleLinear()
 	// .domain([0, 40])
-	.range([0, width]);
+	.range([0, familyLines_width]);
 
 const scaleY_line = d3.scaleLinear()
 	.domain([0, 100])
 	.range([height, 0]);
 
-// const scaleX_hist =
-// const scaleY_hist =
+const scaleX_hist = d3.scaleLinear()
+	.domain([0, 100])  // need to make this dynamic
+	.range([0, familyHist_width]);
+
+const scaleY_hist = d3.scaleBand()
+	.domain(["Lower", "Lower Middle", "Middle", "Upper Middle", "Upper"])
+	.range([height, 0]);
 
 const colorScale = d3.scaleOrdinal()
 	.domain(["Lower", "Lower Middle", "Middle", "Upper Middle", "Upper"])
@@ -33,13 +40,21 @@ const line = d3.line()
 
 // console.log($guess__container.node().offsetWidth, $guess__container.node().offsetHeight)
 
-let $family__vis = $family__svg.attr('width', width + margin.left + margin.right)
+// initial data for the histogram
+let histData = [{quintile: 'Lower', n: 10},
+	{quintile: 'Lower Middle', n: 10},
+	{quintile: 'Middle', n: 10},
+	{quintile: 'Upper Middle', n: 10},
+	{quintile: 'Upper', n: 10}];
+
+// set up line chart
+let $familyLines__vis = $familyLines__svg.attr('width', familyLines_width + margin.left + margin.right)
 	.attr('height', height + margin.top + margin.bottom)
 	.append('g')
 	.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
 // color plot background based on quintile
-let $background = $family__vis.append('g')
+let $background = $familyLines__vis.append('g')
 	.selectAll('.quintileBlock')
 	.data(colorScale.domain())
 	.enter()
@@ -50,7 +65,7 @@ $background.append('rect')
 	.attr('class', 'quintileRect')
 	.attr('x', 0)
 	.attr('y', (d, i) => scaleY_line((i + 1) * 20))
-	.attr('width', width)
+	.attr('width', familyLines_width)
 	.attr('height', height / 5)
 	.style('fill', d => colorScale(d));
 
@@ -62,7 +77,24 @@ $background.append('text')
 	.attr('dy', '-.5em')
 	.text(d => d);
 
-let $lines = $family__vis.append('g');
+let $lines = $familyLines__vis.append('g');
+
+// // set up histogram
+let $familyHist__vis = $familyHist__svg.attr('width', familyHist_width)
+	.attr('height', height + margin.top + margin.bottom)
+	.append('g')
+	.attr('transform', 'translate(0,' + margin.top + ')');
+
+let $bars = $familyHist__vis.selectAll('.bar')
+	.data(histData)
+	.enter()
+	.append('rect')
+	.attr('class', 'bar')
+	.attr('x', 0)
+	.attr('y', d => scaleY_hist(d.quintile))
+	.attr('width', d => scaleX_hist(d.n))
+	.attr('height', scaleY_hist.bandwidth())
+	.style('fill', d => colorScale(d.quintile));
 
 loadData('line_chart_data.csv').then(result => {
 	console.log(result);
@@ -75,18 +107,18 @@ loadData('line_chart_data.csv').then(result => {
 	// console.log(dataByFamily);
 
 	// append axis for debugging purposes
-	// $family__vis.append('g')
+	// $familyLines__vis.append('g')
 	// 	.attr('class', 'axis axis--y')
 	// 	.call(d3.axisLeft(scaleY_line));
 
-	// $family__vis.append('g')
+	// $familyLines__vis.append('g')
 	// 	.attr('class', 'axis axis--x')
 	// 	.attr('transform', 'translate(0,' + height + ')')
 	// 	.call(d3.axisBottom(scaleX_line));
 
 	// draw first line
 	$lines.selectAll('.line')
-		.data(dataByFamily.filter((d, i) => i < 20)) // just plot a subset of the data for now
+		.data(dataByFamily.filter((d, i) => i < 10)) // just plot a subset of the data for now
 		.enter()
 		.append('path')
 		.attr('class', (d, i) => 'line family_' + i)
@@ -101,7 +133,7 @@ loadData('line_chart_data.csv').then(result => {
 			.style('opacity', 1);
 
 		fam_num++;
-		if (fam_num === 20) t.stop();
+		if (fam_num === 10) t.stop();
 	}, 500);
 
 }).catch(console.error);
