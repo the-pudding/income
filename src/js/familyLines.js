@@ -127,7 +127,7 @@ loadData('line_chart_data.csv').then(result => {
 
 	// draw first line
 	$lines.selectAll('.line')
-		.data(dataByFamily.filter((d, i) => i < 100)) // just plot a subset of the data for now
+		.data(dataByFamily.filter((d, i) => i < 1000)) // just plot a subset of the data for now
 		.enter()
 		.append('path')
 		.attr('class', (d, i) => 'line family_' + i)
@@ -148,7 +148,7 @@ loadData('line_chart_data.csv').then(result => {
 	let t = d3.interval(function(elapsed) {
 		// unhide line
 		$lines.select('.line.family_' + fam_num)
-			.transition(500)
+			.transition(250)
 			.style('opacity', 1);
 
 		// update histogram
@@ -159,12 +159,12 @@ loadData('line_chart_data.csv').then(result => {
 
 		$bars.data(histData)
 			.transition()
-			.duration(500)
+			.duration(250)
 			.attr('width', d => scaleX_hist(d.n));
 
 		fam_num++;
-		if (fam_num === 100) t.stop();
-	}, 500);
+		if (fam_num === 1000) t.stop();
+	}, 250);
 
 }).catch(console.error);
 
@@ -175,7 +175,7 @@ function updateHistScaleX() {
 
 	if(dataMax > scale_current_max) {
 		scaleX_hist.domain([0, scaleX_hist_breakpoints[0]]);
-		scaleX_hist_breakpoints.shift();
+		scaleX_hist_breakpoints.shift();  // TODO: need to store these in a new array in case user hits the replay button (or make a copy of the original array and .shift on the copy)
 	}
 }
 
