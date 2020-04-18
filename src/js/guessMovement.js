@@ -58,7 +58,11 @@ let $bars = $guess__vis.selectAll('.brush')
 	.attr('class', 'brush')
 	.append('g')
 	.call($brush)
-	.call($brush.move, function(d) { return [d.share, 0].map(scaleY); }); // this actually draws the "bars"
+	.call($brush.move, function(d) { return [d.share, 0].map(scaleY); }) // this actually draws the "bars"
+	.call(g => g.select('.overlay')
+		.datum({type: 'selection'})
+		.on('mousedown touchstart', resizeBar)
+	);
 
 // get rid of handle at the bottom of the bars
 $guess__vis.selectAll('.handle--s').remove();
@@ -68,8 +72,7 @@ $guess__vis.selectAll('.selection').attr('cursor', 'auto');
 $guess__vis.selectAll('.overlay').attr('cursor', 'auto');
 
 // disable ability to completely redraw the bar anywhere within its lane
-$guess__vis.selectAll('.overlay').attr('pointer-events', 'none');
-
+// $guess__vis.selectAll('.overlay').attr('pointer-events', 'none');
 
 function brushMove() {
 	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely (but only after the first brush event has occurred)
@@ -111,6 +114,12 @@ function brushEnd() {
     	$bars.call($brush.move, function(d) { return [d.share, 0].map(scaleY); });
     }
 	updateInterpretText();
+}
+
+function resizeBar() {
+	const clickedY = d3.mouse(this)[1];
+	d3.select(this.parentNode)
+		.call($brush.move, [clickedY, 0]);
 }
 
 function updateWarningMsg() {
