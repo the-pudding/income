@@ -22,8 +22,10 @@ const scaleY_line = d3.scaleLinear()
 	.range([height, 0]);
 
 const scaleX_hist = d3.scaleLinear()
-	// .domain([0, 100])
+	.domain([0, 150])
 	.range([0, familyHist_width]);
+
+let scaleX_hist_breakpoints = [500, 1000, 5000, 10000, 20000, 30000, 43000];
 
 const scaleY_hist = d3.scaleBand()
 	.domain(quintileNames)
@@ -103,12 +105,14 @@ loadData('line_chart_data.csv').then(result => {
 	let dataByFamily = d3.nest()
 		.key(d => d.id)
 		.entries(result);
+	// console.log(dataByFamily.length);
 
 	// set scale domains
 	scaleX_line.domain([0, d3.max(result, d => +d.year)]).nice();
-	let counts = countFrequency(result);
-	let countsArray = objToArray(counts);
-	scaleX_hist.domain([0, d3.max(countsArray, d => d.n)]);
+	// let counts = countFrequency(result);
+	// let countsArray = objToArray(counts);
+	// scaleX_hist.domain([0, d3.max(countsArray, d => d.n)]);
+	// console.log(scaleX_hist.domain());
 	// console.log(dataByFamily[0]);
 
 	// append axis for debugging purposes
@@ -123,7 +127,7 @@ loadData('line_chart_data.csv').then(result => {
 
 	// draw first line
 	$lines.selectAll('.line')
-		.data(dataByFamily.filter((d, i) => i < 10)) // just plot a subset of the data for now
+		.data(dataByFamily.filter((d, i) => i < 100)) // just plot a subset of the data for now
 		.enter()
 		.append('path')
 		.attr('class', (d, i) => 'line family_' + i)
@@ -144,21 +148,36 @@ loadData('line_chart_data.csv').then(result => {
 	let t = d3.interval(function(elapsed) {
 		// unhide line
 		$lines.select('.line.family_' + fam_num)
-			.transition(800)
+			.transition(500)
 			.style('opacity', 1);
 
 		// update histogram
 		updateHistData(dataByFamily[fam_num].values);
+
+		// check if we need to update histogram's scaleX
+		updateHistScaleX();
+
 		$bars.data(histData)
 			.transition()
-			.duration(800)
+			.duration(500)
 			.attr('width', d => scaleX_hist(d.n));
 
 		fam_num++;
-		if (fam_num === 10) t.stop();
+		if (fam_num === 100) t.stop();
 	}, 500);
 
 }).catch(console.error);
+
+function updateHistScaleX() {
+	// updates the ScaleX for the histogram when the number of observations exceeds the current domain bounds
+	const dataMax = d3.max(histData, d => d.n);
+	const scale_current_max = scaleX_hist.domain()[1];
+
+	if(dataMax > scale_current_max) {
+		scaleX_hist.domain([0, scaleX_hist_breakpoints[0]]);
+		scaleX_hist_breakpoints.shift();
+	}
+}
 
 function updateHistData(data) {
 	// updates the data used for the histogram (histData) with the frequencies from one additional family
