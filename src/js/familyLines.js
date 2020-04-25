@@ -12,6 +12,10 @@ let familyLines_width = $familyLines__svg.node().getBoundingClientRect().width -
 let familyHist_width = $familyHist__svg.node().getBoundingClientRect().width - margin_hist.left - margin_hist.right;
 let height = $family__container.node().offsetHeight - margin.top - margin.bottom;
 
+// parameters for line chart animation
+const maxLines = 10;  // max number of lines that should appear on the chart at any given time
+const milliseconds = 250;  // amount of time that should elapse before the next line is drawn
+
 const quintileNames = ["Lower", "Lower Middle", "Middle", "Upper Middle", "Upper"];
 // scales
 const scaleX_line = d3.scaleLinear()
@@ -140,7 +144,10 @@ loadData('line_chart_data.csv').then(result => {
 		.attr('d', d => line(d.values))
 		.style('opacity', 1)
 		.transition()
-		.delay(5000)
+		.delay(milliseconds)  // once next line is drawn, reduce the opacity of this line
+		.style('opacity', 0.1)
+		.transition()
+		.delay((milliseconds * maxLines) - 1)
 		.duration(250)
 		.style('opacity', 0)
 		.remove();
@@ -166,14 +173,13 @@ loadData('line_chart_data.csv').then(result => {
 			.attr('d', d => line(d.values))
 			.style('opacity', 1)
 			.transition()
-			.delay(5000)  // it takes 5 seconds (0.25 * 20) to add 20 new lines to the chart
-			.duration(250)
+			.delay(milliseconds)
+			.style('opacity', 0.1)
+			.transition()
+			.delay(milliseconds * maxLines)  // it takes 5 seconds (0.25 * 20) to add 20 new lines to the chart
+			.duration(milliseconds)
 			.style('opacity', 0)
 			.remove();
-
-		$lines.select('.line.family_' + fam_num)
-			.transition(250)
-			.style('opacity', 1);
 
 		// update histogram
 		updateHistData(dataByFamily[fam_num].values);
@@ -183,12 +189,12 @@ loadData('line_chart_data.csv').then(result => {
 
 		$bars.data(histData)
 			.transition()
-			.duration(250)
+			.duration(milliseconds)
 			.attr('width', d => scaleX_hist(d.n));
 
 		fam_num++;
-		if (fam_num === 200) t.stop();
-	}, 250);
+		if (fam_num === 100) t.stop();
+	}, milliseconds);
 
 }).catch(console.error);
 
