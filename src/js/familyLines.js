@@ -62,29 +62,7 @@ let $familyLines__vis = $familyLines__svg.attr('width', familyLines_width + marg
 	.append('g')
 	.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-// color plot background based on quintile
-let $background = $familyLines__vis.append('g')
-	.selectAll('.quintileBlock')
-	.data(colorScale.domain())
-	.enter()
-	.append('g')
-	.attr('class', 'quintileBlock');
-
-$background.append('rect')
-	.attr('class', 'quintileRect')
-	.attr('x', 0)
-	.attr('y', (d, i) => scaleY_line((i + 1) * 20))
-	.attr('width', familyLines_width)
-	.attr('height', height / 5)
-	.style('fill', d => colorScale(d));
-
-// add "y axis"
-$background.append('text')
-	.attr('class', 'quintileLabel')
-	.attr('x', -5)
-	.attr('y', (d, i) => scaleY_line(i * 20))
-	.attr('dy', '-.5em')
-	.text(d => d);
+addQuintileBackground($familyLines__vis);
 
 let $lines = $familyLines__vis.append('g');
 
@@ -142,12 +120,16 @@ loadData('line_chart_data.csv').then(result => {
 		enter: function(el) {
 			el.classList.add('entered');
 			console.log("I'm on the screen!");
+			animateCharts(dataByFamily);
 		}
 	});
 
+}).catch(console.error);
+
+function animateCharts(data) {
 	// draw first line
 	$lines.selectAll('.line.family_0')
-		.data(dataByFamily.filter((d, i) => i == 0))
+		.data(data.filter((d, i) => i == 0))
 		.enter()
 		.append('path')
 		.attr('class', (d, i) => 'line family_' + i)
@@ -165,7 +147,7 @@ loadData('line_chart_data.csv').then(result => {
 	let fam_num = 1;
 
 	// update histogram with first family's data
-	updateHistData(dataByFamily[0].values);
+	updateHistData(data[0].values);
 	$bars.data(histData)
 		.transition()
 		.duration(100)
@@ -176,7 +158,7 @@ loadData('line_chart_data.csv').then(result => {
 	let t = d3.interval(function(elapsed) {
 		// transition lines
 		$lines.selectAll('.line.family_' + fam_num)
-			.data(dataByFamily.filter((d, i) => i == fam_num))
+			.data(data.filter((d, i) => i == fam_num))
 			.enter()
 			.append('path')
 			.attr('class', (d, i) => 'line family_' + i)
@@ -192,7 +174,7 @@ loadData('line_chart_data.csv').then(result => {
 			.remove();
 
 		// update histogram
-		updateHistData(dataByFamily[fam_num].values);
+		updateHistData(data[fam_num].values);
 
 		// check if we need to update histogram's scaleX
 		updateHistScaleX();
@@ -205,8 +187,35 @@ loadData('line_chart_data.csv').then(result => {
 		fam_num++;
 		if (fam_num === 100) t.stop();
 	}, milliseconds);
+}
 
-}).catch(console.error);
+function addQuintileBackground(chart) {
+	// shades the part of the plot that corresponds to each quintile with that quintile's color
+	// also labels each colored area with the quintile name to the left of the plot
+
+	let $background = chart.append('g')
+		.selectAll('.quintileBlock')
+		.data(colorScale.domain())
+		.enter()
+		.append('g')
+		.attr('class', 'quintileBlock');
+
+	$background.append('rect')
+		.attr('class', 'quintileRect')
+		.attr('x', 0)
+		.attr('y', (d, i) => scaleY_line((i + 1) * 20))
+		.attr('width', familyLines_width)
+		.attr('height', height / 5)
+		.style('fill', d => colorScale(d));
+
+	// add "y axis"
+	$background.append('text')
+		.attr('class', 'quintileLabel')
+		.attr('x', -5)
+		.attr('y', (d, i) => scaleY_line(i * 20))
+		.attr('dy', '-.5em')
+		.text(d => d);
+}
 
 function updateHistScaleX() {
 	// updates the ScaleX for the histogram when the number of observations exceeds the current domain bounds
