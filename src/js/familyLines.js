@@ -132,13 +132,18 @@ loadData('line_chart_data.csv').then(result => {
 		.call(d3.axisBottom(scaleX_hist).ticks(4));
 
 	// draw first line
-	$lines.selectAll('.line')
-		.data(dataByFamily.filter((d, i) => i < 1000)) // just plot a subset of the data for now
+	$lines.selectAll('.line.family_0')
+		.data(dataByFamily.filter((d, i) => i == 0))
 		.enter()
 		.append('path')
 		.attr('class', (d, i) => 'line family_' + i)
 		.attr('d', d => line(d.values))
-		.style('opacity', (d, i) => (i === 0) ? 1 : 0); // maybe draw all the lines on initial chart load but hide all of them except the first one, then when the timer starts, just unveil each line one by one (i.e., set their opacity to 1) instead of updating the data bound to the svg
+		.style('opacity', 1)
+		.transition()
+		.delay(5000)
+		.duration(250)
+		.style('opacity', 0)
+		.remove();
 
 	let fam_num = 1;
 
@@ -152,7 +157,20 @@ loadData('line_chart_data.csv').then(result => {
 
 	// animate chart
 	let t = d3.interval(function(elapsed) {
-		// unhide line
+		// transition lines
+		$lines.selectAll('.line.family_' + fam_num)
+			.data(dataByFamily.filter((d, i) => i == fam_num))
+			.enter()
+			.append('path')
+			.attr('class', (d, i) => 'line family_' + i)
+			.attr('d', d => line(d.values))
+			.style('opacity', 1)
+			.transition()
+			.delay(5000)  // it takes 5 seconds (0.25 * 20) to add 20 new lines to the chart
+			.duration(250)
+			.style('opacity', 0)
+			.remove();
+
 		$lines.select('.line.family_' + fam_num)
 			.transition(250)
 			.style('opacity', 1);
@@ -169,7 +187,7 @@ loadData('line_chart_data.csv').then(result => {
 			.attr('width', d => scaleX_hist(d.n));
 
 		fam_num++;
-		if (fam_num === 1000) t.stop();
+		if (fam_num === 200) t.stop();
 	}, 250);
 
 }).catch(console.error);
