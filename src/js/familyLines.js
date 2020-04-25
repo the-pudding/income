@@ -7,8 +7,9 @@ const $familyHist__svg = $family__container.select('svg.familyBars_svg');
 
 // dimensions
 const margin = {top: 20, bottom: 40, left: 140, right: 0};
+const margin_hist = {left: 10, right: 20};
 let familyLines_width = $familyLines__svg.node().getBoundingClientRect().width - margin.left - margin.right;
-let familyHist_width = $familyHist__svg.node().getBoundingClientRect().width;
+let familyHist_width = $familyHist__svg.node().getBoundingClientRect().width - margin_hist.left - margin_hist.right;
 let height = $family__container.node().offsetHeight - margin.top - margin.bottom;
 
 const quintileNames = ["Lower", "Lower Middle", "Middle", "Upper Middle", "Upper"];
@@ -83,10 +84,10 @@ $background.append('text')
 let $lines = $familyLines__vis.append('g');
 
 // // set up histogram
-let $familyHist__vis = $familyHist__svg.attr('width', familyHist_width)
+let $familyHist__vis = $familyHist__svg.attr('width', familyHist_width + margin_hist.left + margin_hist.right)
 	.attr('height', height + margin.top + margin.bottom)
 	.append('g')
-	.attr('transform', 'translate(0,' + margin.top + ')');
+	.attr('transform', 'translate(' + margin_hist.left + ',' + margin.top + ')');
 
 let $bars = $familyHist__vis.selectAll('.bar')
 	.data(histData)
@@ -124,6 +125,11 @@ loadData('line_chart_data.csv').then(result => {
 	// 	.attr('class', 'axis axis--x')
 	// 	.attr('transform', 'translate(0,' + height + ')')
 	// 	.call(d3.axisBottom(scaleX_line));
+
+	$familyHist__vis.append('g')
+		.attr('class', 'axis axis--x')
+		.attr('transform', 'translate(0,' + height + ')')
+		.call(d3.axisBottom(scaleX_hist).ticks(4));
 
 	// draw first line
 	$lines.selectAll('.line')
@@ -176,6 +182,10 @@ function updateHistScaleX() {
 	if(dataMax > scale_current_max) {
 		scaleX_hist.domain([0, scaleX_hist_breakpoints[0]]);
 		scaleX_hist_breakpoints.shift();  // TODO: need to store these in a new array in case user hits the replay button (or make a copy of the original array and .shift on the copy)
+
+		$familyHist__vis.selectAll(".axis.axis--x")
+			.transition()
+			.call(d3.axisBottom(scaleX_hist).ticks(4));
 	}
 }
 
