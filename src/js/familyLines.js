@@ -1,4 +1,5 @@
 import loadData from './load-data'
+import enterView from 'enter-view';
 
 const $section = d3.select('.familyLines');
 const $family__container = $section.select('.family__figure');
@@ -87,7 +88,7 @@ $background.append('text')
 
 let $lines = $familyLines__vis.append('g');
 
-// // set up histogram
+// set up histogram
 let $familyHist__vis = $familyHist__svg.attr('width', familyHist_width + margin_hist.left + margin_hist.right)
 	.attr('height', height + margin.top + margin.bottom)
 	.append('g')
@@ -134,6 +135,15 @@ loadData('line_chart_data.csv').then(result => {
 		.attr('class', 'axis axis--x')
 		.attr('transform', 'translate(0,' + height + ')')
 		.call(d3.axisBottom(scaleX_hist).ticks(4));
+
+	enterView({
+		selector: '.family__figure',
+		offset: 0.5,
+		enter: function(el) {
+			el.classList.add('entered');
+			console.log("I'm on the screen!");
+		}
+	});
 
 	// draw first line
 	$lines.selectAll('.line.family_0')
