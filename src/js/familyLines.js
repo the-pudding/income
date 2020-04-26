@@ -118,10 +118,11 @@ loadData('line_chart_data.csv').then(result => {
 		selector: '.family__figure',
 		offset: 0.5,
 		enter: function(el) {
-			el.classList.add('entered');
-			console.log("I'm on the screen!");
+			// el.classList.add('entered');
+			// console.log("I'm on the screen!");
 			animateCharts(dataByFamily);
-		}
+		},
+		once: true,
 	});
 
 }).catch(console.error);
