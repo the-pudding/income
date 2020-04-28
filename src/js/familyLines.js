@@ -140,7 +140,7 @@ function animateCharts(data) {
 		.delay(milliseconds)  // once next line is drawn, reduce the opacity of this line
 		.style('opacity', 0.1)
 		.transition()
-		.delay((milliseconds * maxLines) - 1)
+		.delay(milliseconds * maxLines)
 		.duration(250)
 		.style('opacity', 0)
 		.remove();
@@ -186,7 +186,7 @@ function animateCharts(data) {
 			.attr('width', d => scaleX_hist(d.n));
 
 		fam_num++;
-		if (fam_num === 100) t.stop();
+		if (fam_num === 1000) t.stop();
 	}, milliseconds);
 }
 
