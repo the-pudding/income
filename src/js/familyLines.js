@@ -15,7 +15,7 @@ let height = $family__container.node().offsetHeight - margin.top - margin.bottom
 
 // parameters for line chart animation
 const maxLines = 10;  // max number of lines that should appear on the chart at any given time
-const milliseconds = 250;  // amount of time that should elapse before the next line is drawn
+let milliseconds = 500;  // amount of time that should elapse before the next line is drawn
 
 const quintileNames = ["Lower", "Lower Middle", "Middle", "Upper Middle", "Upper"];
 // scales
@@ -138,10 +138,10 @@ function animateCharts(data) {
 		.style('opacity', 1)
 		.transition()
 		.delay(milliseconds)  // once next line is drawn, reduce the opacity of this line
-		.style('opacity', 0.1)
+		.style('opacity', 0.05)
 		.transition()
 		.delay(milliseconds * maxLines)
-		.duration(250)
+		.duration(milliseconds)
 		.style('opacity', 0)
 		.remove();
 
@@ -151,7 +151,7 @@ function animateCharts(data) {
 	updateHistData(data[0].values);
 	$bars.data(histData)
 		.transition()
-		.duration(100)
+		.duration(milliseconds)
 		.attr('width', d => scaleX_hist(d.n));
 
 
@@ -162,12 +162,12 @@ function animateCharts(data) {
 			.data(data.filter((d, i) => i == fam_num))
 			.enter()
 			.append('path')
-			.attr('class', (d, i) => 'line family_' + i)
+			.attr('class', (d, i) => 'line family_' + fam_num)
 			.attr('d', d => line(d.values))
 			.style('opacity', 1)
 			.transition()
 			.delay(milliseconds)
-			.style('opacity', 0.1)
+			.style('opacity', 0.05)
 			.transition()
 			.delay(milliseconds * maxLines)  // it takes 5 seconds (0.25 * 20) to add 20 new lines to the chart
 			.duration(milliseconds)
@@ -186,7 +186,9 @@ function animateCharts(data) {
 			.attr('width', d => scaleX_hist(d.n));
 
 		fam_num++;
-		if (fam_num === 1000) t.stop();
+
+		// if(fam_num > 20) milliseconds = 100;
+		if (fam_num === 100) t.stop();
 	}, milliseconds);
 }
 
