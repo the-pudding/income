@@ -120,12 +120,93 @@ loadData('line_chart_data.csv').then(result => {
 		enter: function(el) {
 			// el.classList.add('entered');
 			// console.log("I'm on the screen!");
-			animateCharts(dataByFamily);
+			// animateCharts(dataByFamily);
+			let fam_num = 0;
+
+			setTimeout(test, milliseconds);
+
+			function test() {
+				if(fam_num <= 100) {
+					// console.log(fam_num);
+
+					if(fam_num <= 10) {
+						animate1(dataByFamily, fam_num);
+						setTimeout(test, milliseconds);
+					}
+					else {
+						animate2(dataByFamily, fam_num);
+						setTimeout(test, 50);
+					}
+				}
+				fam_num++;
+			}
 		},
 		once: true,
 	});
 
 }).catch(console.error);
+
+function animate1(data, fam_num) {
+
+	// transition lines
+	$lines.selectAll('.line.family_' + fam_num)
+		.data(data.filter((d, i) => i == fam_num))
+		.enter()
+		.append('path')
+		.attr('class', (d, i) => 'line family_' + fam_num)
+		.attr('d', d => line(d.values))
+		.style('opacity', 1)
+		.transition()
+		.delay(milliseconds)
+		.style('opacity', 0.05)
+		.transition()
+		.delay(milliseconds * maxLines)  // it takes 5 seconds (0.25 * 20) to add 20 new lines to the chart
+		.duration(milliseconds)
+		.style('opacity', 0)
+		.remove();
+
+	// update histogram
+	updateHistData(data[fam_num].values);
+
+	// check if we need to update histogram's scaleX
+	updateHistScaleX();
+
+	$bars.data(histData)
+		.transition()
+		.duration(milliseconds)
+		.attr('width', d => scaleX_hist(d.n));
+}
+
+function animate2(data, fam_num) {
+
+	// transition lines
+	$lines.selectAll('.line.family_' + fam_num)
+		.data(data.filter((d, i) => i == fam_num))
+		.enter()
+		.append('path')
+		.attr('class', (d, i) => 'line family_' + fam_num)
+		.attr('d', d => line(d.values))
+		.style('opacity', 1)
+		.transition()
+		.delay(50)
+		// .style('opacity', 0.05)
+		// .transition()
+		// .delay(milliseconds * maxLines)  // it takes 5 seconds (0.25 * 20) to add 20 new lines to the chart
+		// .duration(milliseconds)
+		// .style('opacity', 0)
+		.remove();
+
+	// update histogram
+	updateHistData(data[fam_num].values);
+
+	// check if we need to update histogram's scaleX
+	updateHistScaleX();
+
+	$bars.data(histData)
+		// .transition()
+		// .duration(milliseconds)
+		.attr('width', d => scaleX_hist(d.n));
+}
 
 function animateCharts(data) {
 	// draw first line
@@ -187,7 +268,6 @@ function animateCharts(data) {
 
 		fam_num++;
 
-		// if(fam_num > 20) milliseconds = 100;
 		if (fam_num === 100) t.stop();
 	}, milliseconds);
 }
