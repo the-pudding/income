@@ -291,7 +291,7 @@ function addQuintileBackground(chart) {
 		.attr('class', 'quintileLabel')
 		.attr('x', -5)
 		.attr('y', (d, i) => scaleY_line(i * 20))
-		.attr('dy', '-.5em')
+		.attr('dy', '-1em')
 		.text(d => d);
 }
 
