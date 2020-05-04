@@ -130,7 +130,7 @@ loadData('line_chart_data.csv').then(result => {
 			setTimeout(animateLines, ms_slow);
 
 			function animateLines() {
-				if(fam_num <= totalLines) {
+				if(fam_num < totalLines) {
 					if(fam_num <= maxLines) {
 						animate1(dataByFamily, fam_num);
 						setTimeout(animateLines, ms_slow);
@@ -169,16 +169,7 @@ function animate1(data, fam_num) {
 		.style('opacity', 0)
 		.remove();
 
-	// update histogram
-	updateHistData(data[fam_num].values);
-
-	// check if we need to update histogram's scaleX
-	updateHistScaleX();
-
-	$bars.data(histData)
-		.transition()
-		.duration(ms_slow)
-		.attr('width', d => scaleX_hist(d.n));
+	updateHistogram(data, fam_num, ms_slow);
 }
 
 function animate2(data, fam_num) {
@@ -197,6 +188,10 @@ function animate2(data, fam_num) {
 		.delay(ms_fast)
 		.remove();
 
+	updateHistogram(data, fam_num, ms_fast);
+}
+
+function updateHistogram(data, fam_num, time) {
 	// update histogram
 	updateHistData(data[fam_num].values);
 
@@ -205,10 +200,9 @@ function animate2(data, fam_num) {
 
 	$bars.data(histData)
 		.transition()
-		.duration(ms_fast)
+		.duration(time)
 		.attr('width', d => scaleX_hist(d.n));
 }
-
 // function animateCharts(data) {
 // 	// draw first line
 // 	$lines.selectAll('.line.family_0')
