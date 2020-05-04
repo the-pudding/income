@@ -131,7 +131,7 @@ loadData('line_chart_data.csv').then(result => {
 
 			function animateLines() {
 				if(fam_num < totalLines) {
-					if(fam_num <= maxLines) {
+					if(fam_num < maxLines) {
 						animate1(dataByFamily, fam_num);
 						setTimeout(animateLines, ms_slow);
 					}
