@@ -6,6 +6,8 @@ const $family__container = $section.select('.family__figure');
 const $familyLines__svg = $family__container.select('svg.familyLines_svg');
 const $familyHist__svg = $family__container.select('svg.familyBars_svg');
 
+const $skipToEnd__btn = $section.select('.skipToEnd');
+
 // dimensions
 const margin = {top: 20, bottom: 40, left: 140, right: 0};
 const margin_hist = {left: 10, right: 20};
@@ -14,6 +16,7 @@ let familyHist_width = $familyHist__svg.node().getBoundingClientRect().width - m
 let height = $family__container.node().offsetHeight - margin.top - margin.bottom;
 
 // parameters for line chart animation
+let timer;
 const maxLines = 10;  // max number of lines that should appear on the chart at any given time
 let ms_slow = 750;  // how much time should elapse before the next line is drawn during the slow phase of the animation
 let ms_fast = 10; // how much time should elapse during the sped up phase of the animation
@@ -97,8 +100,9 @@ loadData('line_chart_data.csv').then(result => {
 
 	// set scale domains
 	scaleX_line.domain([0, d3.max(result, d => +d.year)]).nice();
-	// let counts = countFrequency(result);
-	// let countsArray = objToArray(counts);
+	const counts = countFrequency(result);
+	let countsArray = objToArray(counts);
+
 	// scaleX_hist.domain([0, d3.max(countsArray, d => d.n)]);
 	// console.log(scaleX_hist.domain());
 	// console.log(dataByFamily[0]);
@@ -127,17 +131,18 @@ loadData('line_chart_data.csv').then(result => {
 			// animateCharts(dataByFamily);
 			let fam_num = 0;
 
-			setTimeout(animateLines, ms_slow);
+			timer = setTimeout(animateLines, ms_slow);
 
 			function animateLines() {
 				if(fam_num < totalLines) {
+				// if(fam_num < 100) {
 					if(fam_num < maxLines) {
 						animate1(dataByFamily, fam_num);
-						setTimeout(animateLines, ms_slow);
+						timer = setTimeout(animateLines, ms_slow);
 					}
 					else {
 						animate2(dataByFamily, fam_num);
-						setTimeout(animateLines, ms_fast);
+						timer = setTimeout(animateLines, ms_fast);
 					}
 				}
 				fam_num++;
@@ -146,7 +151,29 @@ loadData('line_chart_data.csv').then(result => {
 		once: true,
 	});
 
+	// event handlers
+	$skipToEnd__btn.on('click', () => showEnd(countsArray));
+
 }).catch(console.error);
+
+function showEnd(countsArray) {
+	// when user clicks the button to skip the animation, cancel the timer, remove all lines
+	// from the plot and show the histogram with data from all families
+	clearTimeout(timer);
+
+	$lines.selectAll(".line").remove();
+
+	scaleX_hist.domain([0, scaleX_hist_breakpoints[scaleX_hist_breakpoints.length - 1]]);
+
+	$familyHist__vis.selectAll(".axis.axis--x")
+		.transition()
+		.call(d3.axisBottom(scaleX_hist).ticks(4));
+
+	$bars.data(countsArray)
+		.transition()
+		.duration(500)
+		.attr('width', d => scaleX_hist(d.n));
+}
 
 function animate1(data, fam_num) {
 	// animation function for the first few lines where multiple lines appear on the plot at once
