@@ -3,7 +3,7 @@ import enterView from 'enter-view';
 
 const $section = d3.select('.familyLines');
 const $family__container = $section.select('.family__figure');
-const $familyLines__svg = $family__container.select('svg.familyLines_svg');
+const $canvas__container = $family__container.select('.canvasContainer');
 const $familyHist__svg = $family__container.select('svg.familyBars_svg');
 
 const $skipToEnd__btn = $section.select('.skipToEnd');
@@ -11,9 +11,16 @@ const $skipToEnd__btn = $section.select('.skipToEnd');
 // dimensions
 const margin = {top: 20, bottom: 40, left: 140, right: 0};
 const margin_hist = {left: 10, right: 20};
-let familyLines_width = $familyLines__svg.node().getBoundingClientRect().width - margin.left - margin.right;
+let familyLines_width = $canvas__container.node().getBoundingClientRect().width - margin.left - margin.right;
 let familyHist_width = $familyHist__svg.node().getBoundingClientRect().width - margin_hist.left - margin_hist.right;
 let height = $family__container.node().offsetHeight - margin.top - margin.bottom;
+
+// add in canvas element
+const $canvas = $canvas__container.append('canvas')
+	.attr('width', familyLines_width + margin.left + margin.right)
+	.attr('height', height);
+
+let $context = $canvas.node().getContext('2d');
 
 // parameters for line chart animation
 let timer;
@@ -62,14 +69,14 @@ let histData = [{quintile: 'Lower', n: 0},
 	{quintile: 'Upper', n: 0}];
 
 // set up line chart
-let $familyLines__vis = $familyLines__svg.attr('width', familyLines_width + margin.left + margin.right)
-	.attr('height', height + margin.top + margin.bottom)
-	.append('g')
-	.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+// let $familyLines__vis = $familyLines__svg.attr('width', familyLines_width + margin.left + margin.right)
+// 	.attr('height', height + margin.top + margin.bottom)
+// 	.append('g')
+// 	.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-addQuintileBackground($familyLines__vis);
+addQuintileBackground();
 
-let $lines = $familyLines__vis.append('g');
+// let $lines = $familyLines__vis.append('g');
 
 // set up histogram
 let $familyHist__vis = $familyHist__svg.attr('width', familyHist_width + margin_hist.left + margin_hist.right)
@@ -134,8 +141,8 @@ loadData('line_chart_data.csv').then(result => {
 			timer = setTimeout(animateLines, ms_slow);
 
 			function animateLines() {
-				if(fam_num < totalLines) {
-				// if(fam_num < 100) {
+				// if(fam_num < totalLines) {
+				if(fam_num < 100) {
 					if(fam_num < maxLines) {
 						animate1(dataByFamily, fam_num);
 						timer = setTimeout(animateLines, ms_slow);
@@ -180,21 +187,21 @@ function animate1(data, fam_num) {
 	// when the next line is drawn, reduce the opacity of previously drawn line and remove the
 	// line entirely when ten more lines are drawn afterwards
 
-	$lines.selectAll('.line.family_' + fam_num)
-		.data(data.filter((d, i) => i == fam_num))
-		.enter()
-		.append('path')
-		.attr('class', (d, i) => 'line family_' + fam_num)
-		.attr('d', d => line(d.values))
-		.style('opacity', 1)
-		.transition()
-		.delay(ms_slow)
-		.style('opacity', 0.05)
-		.transition()
-		.delay(ms_slow * (maxLines - 1))  // it takes 5 seconds (0.25 * 20) to add 20 new lines to the chart
-		.duration(ms_slow)
-		.style('opacity', 0)
-		.remove();
+	// $lines.selectAll('.line.family_' + fam_num)
+	// 	.data(data.filter((d, i) => i == fam_num))
+	// 	.enter()
+	// 	.append('path')
+	// 	.attr('class', (d, i) => 'line family_' + fam_num)
+	// 	.attr('d', d => line(d.values))
+	// 	.style('opacity', 1)
+	// 	.transition()
+	// 	.delay(ms_slow)
+	// 	.style('opacity', 0.05)
+	// 	.transition()
+	// 	.delay(ms_slow * (maxLines - 1))  // it takes 5 seconds (0.25 * 20) to add 20 new lines to the chart
+	// 	.duration(ms_slow)
+	// 	.style('opacity', 0)
+	// 	.remove();
 
 	updateHistogram(data, fam_num, ms_slow);
 }
@@ -204,16 +211,16 @@ function animate2(data, fam_num) {
 	// because the animation is so fast, only one line appears on the plot at once so
 	// there's no need to fade it out - instead, just remove the line before drawing the next one
 
-	$lines.selectAll('.line.family_' + fam_num)
-		.data(data.filter((d, i) => i == fam_num))
-		.enter()
-		.append('path')
-		.attr('class', (d, i) => 'line family_' + fam_num)
-		.attr('d', d => line(d.values))
-		.style('opacity', 1)
-		.transition()
-		.delay(ms_fast)
-		.remove();
+	// $lines.selectAll('.line.family_' + fam_num)
+	// 	.data(data.filter((d, i) => i == fam_num))
+	// 	.enter()
+	// 	.append('path')
+	// 	.attr('class', (d, i) => 'line family_' + fam_num)
+	// 	.attr('d', d => line(d.values))
+	// 	.style('opacity', 1)
+	// 	.transition()
+	// 	.delay(ms_fast)
+	// 	.remove();
 
 	updateHistogram(data, fam_num, ms_fast);
 }
@@ -294,32 +301,28 @@ function updateHistogram(data, fam_num, time) {
 // 	}, ms_slow);
 // }
 
-function addQuintileBackground(chart) {
+function addQuintileBackground() {
 	// shades the part of the plot that corresponds to each quintile with that quintile's color
 	// also labels each colored area with the quintile name to the left of the plot
 
-	let $background = chart.append('g')
-		.selectAll('.quintileBlock')
-		.data(colorScale.domain())
-		.enter()
-		.append('g')
-		.attr('class', 'quintileBlock');
+	quintileNames.forEach((d, i) => {
+		$context.fillStyle = colorScale(d);
+		$context.fillRect(margin.left, scaleY_line((i + 1) * 20), familyLines_width, height / 5)
 
-	$background.append('rect')
-		.attr('class', 'quintileRect')
-		.attr('x', 0)
-		.attr('y', (d, i) => scaleY_line((i + 1) * 20))
-		.attr('width', familyLines_width)
-		.attr('height', height / 5)
-		.style('fill', d => colorScale(d));
+		$context.font = '18px Tiempos Text Web'
+		$context.fillStyle = '#000';
+		$context.textAlign = 'end';
+		$context.textBaseline = 'middle';
+		$context.fillText(d, margin.left - 10, scaleY_line(i * 20) - (height / 10));
+	});
 
 	// add "y axis"
-	$background.append('text')
-		.attr('class', 'quintileLabel')
-		.attr('x', -5)
-		.attr('y', (d, i) => scaleY_line(i * 20))
-		.attr('dy', '-1em')
-		.text(d => d);
+	// $background.append('text')
+	// 	.attr('class', 'quintileLabel')
+	// 	.attr('x', -5)
+	// 	.attr('y', (d, i) => scaleY_line(i * 20))
+	// 	.attr('dy', '-1em')
+	// 	.text(d => d);
 }
 
 function updateHistScaleX() {
