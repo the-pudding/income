@@ -26,7 +26,7 @@ let $context = $canvas.node().getContext('2d');
 // parameters for line chart animation
 let timer;
 const maxLines = 10;  // max number of lines that should appear on the chart at any given time
-let ms_slow = 750;  // how much time should elapse before the next line is drawn during the slow phase of the animation
+let ms_slow = 1000;  // how much time should elapse before the next line is drawn during the slow phase of the animation
 let ms_fast = 20; // how much time should elapse during the sped up phase of the animation
 // animation will take: (10 * 750) + ((7857-10) * 20) = 164,440 ms or 2.74 min to run
 let fam_num = 0;
@@ -136,12 +136,14 @@ loadData('line_chart_data.csv').then(result => {
 	// 	$context.stroke();
 	// })
 
+	let firstLineLength = dataByFamily[0].values.length;
+
 	enterView({
 		selector: '.family__figure',
 		offset: 0.5,
 		enter: function() {
 			drawFirstLine();
-			// timer = setTimeout(animateLines, ms_slow);
+			timer = setTimeout(animateLines, firstLineLength * ms_slow);
 		},
 		once: true,
 	});
@@ -157,7 +159,7 @@ function drawFirstLine() {
 	// then update histogram
 	let firstLineData = dataByFamily[0].values;
 	let length = 0;
-	let timer2 = setTimeout(drawSegment, 1000);
+	let timer2 = setTimeout(drawSegment, ms_slow);
 
 	function drawSegment() {
 		if(length < firstLineData.length) {
@@ -166,9 +168,9 @@ function drawFirstLine() {
 			$context.strokeStyle = 'rgba(28, 28, 28, 1)';
 			$context.stroke();
 
-			updateHistogram(firstLineData.slice(length, length + 1), 500);
+			updateHistogram(firstLineData.slice(length, length + 1), ms_slow / 2);
 
-			timer2 = setTimeout(drawSegment, 1000);
+			timer2 = setTimeout(drawSegment, ms_slow);
 		}
 		length++;
 	}
@@ -208,7 +210,7 @@ function animate(data, fam_num, ms) {
 		for(let i = fam_num - 1; i >= 0; i--) {
 			$context.beginPath();
 			line(data[i].values);
-			$context.strokeStyle = 'rgba(28, 28, 28, 0.2)';
+			$context.strokeStyle = 'rgba(28, 28, 28, 0.1)';
 			$context.stroke();
 		}
 	}
@@ -329,7 +331,9 @@ function replay() {
 
 	// restart animation
 	fam_num = 0;
-	timer = setTimeout(animateLines, ms_slow);
+	let firstLineLength = dataByFamily[0].values.length;
+	drawFirstLine();
+	timer = setTimeout(animateLines, firstLineLength * ms_slow);
 }
 
 function showEnd(countsArray) {
