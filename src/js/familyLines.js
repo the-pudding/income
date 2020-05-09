@@ -46,10 +46,10 @@ const scaleY_line = d3.scaleLinear()
 	.range([height, 0]);
 
 const scaleX_hist = d3.scaleLinear()
-	.domain([0, 150])
+	.domain([0, 10])
 	.range([0, familyHist_width]);
 
-const scaleX_hist_breakpoints = [500, 1000, 5000, 10000, 20000, 30000, 43000];
+const scaleX_hist_breakpoints = [100, 500, 1000, 5000, 10000, 20000, 30000, 43000];
 let scaleX_hist_breakpoints_copy = scaleX_hist_breakpoints.slice();
 
 const scaleY_hist = d3.scaleBand()
@@ -62,8 +62,8 @@ const colorScale = d3.scaleOrdinal()
 
 const line = d3.line()
     // .defined(function(d) { return !isNaN(d.enrollment) && d.enrollment >= 0; })
-    .x(d => scaleX_line(d.year))
-    .y(d => scaleY_line(d.pctile))
+    .x(d => scaleX_line(d.year))     // way to round this to nearest .5 pixel? (see if that makes line sharper in canvas)
+    .y(d => scaleY_line(d.pctile))   // way to round this to nearest .5 pixel?
     .curve(d3.curveStepAfter)
     .context($context);
 
@@ -100,7 +100,7 @@ loadData('line_chart_data.csv').then(result => {
 	dataByFamily = d3.nest()
 		.key(d => d.id)
 		.entries(result);
-
+// console.log(dataByFamily[0]);
 	totalLines = dataByFamily.length;
 
 	// set scale domains
@@ -139,7 +139,10 @@ loadData('line_chart_data.csv').then(result => {
 	enterView({
 		selector: '.family__figure',
 		offset: 0.5,
-		enter: function() { timer = setTimeout(animateLines, ms_slow); },
+		enter: function() {
+			drawFirstLine();
+			// timer = setTimeout(animateLines, ms_slow);
+		},
 		once: true,
 	});
 
@@ -149,9 +152,31 @@ loadData('line_chart_data.csv').then(result => {
 
 }).catch(console.error);
 
+function drawFirstLine() {
+	// loop through data, call canvas to draw incrementally to add next year of data to line
+	// then update histogram
+	let firstLineData = dataByFamily[0].values;
+	let length = 0;
+	let timer2 = setTimeout(drawSegment, 1000);
+
+	function drawSegment() {
+		if(length < firstLineData.length) {
+			$context.beginPath();
+			line(firstLineData.slice(length - 1, length + 1));
+			$context.strokeStyle = 'rgba(28, 28, 28, 1)';
+			$context.stroke();
+
+			updateHistogram(firstLineData.slice(length, length + 1), 500);
+
+			timer2 = setTimeout(drawSegment, 1000);
+		}
+		length++;
+	}
+}
+
 function animateLines() {
-	if(fam_num < totalLines) {
-	// if(fam_num < 100) {
+	// if(fam_num < totalLines) {
+	if(fam_num < 100) {
 		if(fam_num < maxLines) {
 			animate(dataByFamily, fam_num, ms_slow);
 			timer = setTimeout(animateLines, ms_slow);
@@ -188,12 +213,12 @@ function animate(data, fam_num, ms) {
 		}
 	}
 
-	updateHistogram(data, fam_num, ms);
+	updateHistogram(data[fam_num].values, ms);
 }
 
-function updateHistogram(data, fam_num, time) {
+function updateHistogram(data, time) {
 	// update histogram
-	updateHistData(data[fam_num].values);
+	updateHistData(data);
 
 	// check if we need to update histogram's scaleX
 	updateHistScaleX();
@@ -284,7 +309,7 @@ function replay() {
 	addQuintileBackground();
 
 	// reset histogram to zero
-	scaleX_hist.domain([0, 150]);
+	scaleX_hist.domain([0, 10]);
 	scaleX_hist_breakpoints_copy = scaleX_hist_breakpoints.slice();
 
 	histData = [{quintile: 'Lower', n: 0},
