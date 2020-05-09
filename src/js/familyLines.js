@@ -166,22 +166,23 @@ loadData('line_chart_data.csv').then(result => {
 }).catch(console.error);
 
 function showEnd(countsArray) {
-	// when user clicks the button to skip the animation, cancel the timer, remove all lines
-	// from the plot and show the histogram with data from all families
-	// clearTimeout(timer);
+	// when user clicks the button to skip the animation, cancel the timer, clear canvas
+	// (but redraw background) and show the histogram with data from all families
+	clearTimeout(timer);
 
-	// $lines.selectAll(".line").remove();
+	$context.clearRect(0, 0, $canvas.attr('width'), $canvas.attr('height'));
+	addQuintileBackground();
 
-	// scaleX_hist.domain([0, scaleX_hist_breakpoints[scaleX_hist_breakpoints.length - 1]]);
+	scaleX_hist.domain([0, scaleX_hist_breakpoints[scaleX_hist_breakpoints.length - 1]]);
 
-	// $familyHist__vis.selectAll(".axis.axis--x")
-	// 	.transition()
-	// 	.call(d3.axisBottom(scaleX_hist).ticks(4));
+	$familyHist__vis.selectAll(".axis.axis--x")
+		.transition()
+		.call(d3.axisBottom(scaleX_hist).ticks(4));
 
-	// $bars.data(countsArray)
-	// 	.transition()
-	// 	.duration(500)
-	// 	.attr('width', d => scaleX_hist(d.n));
+	$bars.data(countsArray)
+		.transition()
+		.duration(500)
+		.attr('width', d => scaleX_hist(d.n));
 }
 
 function animate(data, fam_num, ms) {
