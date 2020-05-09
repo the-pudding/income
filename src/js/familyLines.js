@@ -143,8 +143,8 @@ loadData('line_chart_data.csv').then(result => {
 			timer = setTimeout(animateLines, ms_slow);
 
 			function animateLines() {
-				if(fam_num < totalLines) {
-				// if(fam_num < 100) {
+				// if(fam_num < totalLines) {
+				if(fam_num < 100) {
 					if(fam_num < maxLines) {
 						animate1(dataByFamily, fam_num);
 						timer = setTimeout(animateLines, ms_slow);
@@ -194,9 +194,17 @@ function animate1(data, fam_num) {
 
 	$context.beginPath();
 	line(data[fam_num].values);
+	$context.strokeStyle = 'rgba(28, 28, 28, 1)';
 	$context.stroke();
 
 	// add fade out to previous 9 lines (fam_num - 9) here
+	for(let i = fam_num - 1; i >= 0; i--) {
+		$context.beginPath();
+		line(data[i].values);
+		$context.strokeStyle = 'rgba(28, 28, 28, 0.2)';
+		$context.stroke();
+	}
+
 
 	updateHistogram(data, fam_num, ms_slow);
 }
@@ -212,6 +220,7 @@ function animate2(data, fam_num) {
 
 	$context.beginPath();
 	line(data[fam_num].values);
+	$context.strokeStyle = 'rgba(28, 28, 28, 1)';
 	$context.stroke();
 
 	updateHistogram(data, fam_num, ms_fast);
