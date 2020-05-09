@@ -29,7 +29,7 @@ const maxLines = 10;  // max number of lines that should appear on the chart at 
 let ms_slow = 1000;  // how much time should elapse before the next line is drawn during the slow phase of the animation
 let ms_fast = 20; // how much time should elapse during the sped up phase of the animation
 // animation will take: (10 * 750) + ((7857-10) * 20) = 164,440 ms or 2.74 min to run
-let fam_num = 0;
+let fam_num = 1;
 
 let dataByFamily;
 let totalLines;
@@ -46,7 +46,7 @@ const scaleY_line = d3.scaleLinear()
 	.range([height, 0]);
 
 const scaleX_hist = d3.scaleLinear()
-	.domain([0, 10])
+	.domain([0, 20])
 	.range([0, familyHist_width]);
 
 const scaleX_hist_breakpoints = [100, 500, 1000, 5000, 10000, 20000, 30000, 43000];
@@ -144,6 +144,8 @@ loadData('line_chart_data.csv').then(result => {
 		enter: function() {
 			drawFirstLine();
 			timer = setTimeout(animateLines, firstLineLength * ms_slow);
+			// timer = setTimeout(animateLines, 0);
+
 		},
 		once: true,
 	});
@@ -177,8 +179,8 @@ function drawFirstLine() {
 }
 
 function animateLines() {
-	// if(fam_num < totalLines) {
-	if(fam_num < 100) {
+	if(fam_num < totalLines) {
+	// if(fam_num < 100) {
 		if(fam_num < maxLines) {
 			animate(dataByFamily, fam_num, ms_slow);
 			timer = setTimeout(animateLines, ms_slow);
@@ -311,7 +313,7 @@ function replay() {
 	addQuintileBackground();
 
 	// reset histogram to zero
-	scaleX_hist.domain([0, 10]);
+	scaleX_hist.domain([0, 20]);
 	scaleX_hist_breakpoints_copy = scaleX_hist_breakpoints.slice();
 
 	histData = [{quintile: 'Lower', n: 0},
@@ -330,7 +332,7 @@ function replay() {
 		.attr('width', d => scaleX_hist(d.n));
 
 	// restart animation
-	fam_num = 0;
+	fam_num = 1;
 	let firstLineLength = dataByFamily[0].values.length;
 	drawFirstLine();
 	timer = setTimeout(animateLines, firstLineLength * ms_slow);
