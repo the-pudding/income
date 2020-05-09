@@ -29,9 +29,14 @@ const maxLines = 10;  // max number of lines that should appear on the chart at 
 let ms_slow = 750;  // how much time should elapse before the next line is drawn during the slow phase of the animation
 let ms_fast = 20; // how much time should elapse during the sped up phase of the animation
 // animation will take: (10 * 750) + ((7857-10) * 20) = 164,440 ms or 2.74 min to run
+let fam_num = 0;
 
-const quintileNames = ["Lower", "Lower Middle", "Middle", "Upper Middle", "Upper"];
+let dataByFamily;
+let totalLines;
+
 // scales
+const quintileNames = ["Lower", "Lower Middle", "Middle", "Upper Middle", "Upper"];
+
 const scaleX_line = d3.scaleLinear()
 	// .domain([0, 40])
 	.range([margin.left, margin.left + familyLines_width]);
@@ -44,7 +49,8 @@ const scaleX_hist = d3.scaleLinear()
 	.domain([0, 150])
 	.range([0, familyHist_width]);
 
-let scaleX_hist_breakpoints = [500, 1000, 5000, 10000, 20000, 30000, 43000];
+const scaleX_hist_breakpoints = [500, 1000, 5000, 10000, 20000, 30000, 43000];
+let scaleX_hist_breakpoints_copy = scaleX_hist_breakpoints.slice();
 
 const scaleY_hist = d3.scaleBand()
 	.domain(quintileNames)
@@ -91,11 +97,11 @@ let $bars = $familyHist__vis.selectAll('.bar')
 loadData('line_chart_data.csv').then(result => {
 	// console.log(result);
 	// nest data because that's the structure d3 needs to make line charts
-	let dataByFamily = d3.nest()
+	dataByFamily = d3.nest()
 		.key(d => d.id)
 		.entries(result);
 
-	const totalLines = dataByFamily.length;
+	totalLines = dataByFamily.length;
 
 	// set scale domains
 	scaleX_line.domain([0, d3.max(result, d => +d.year)]).nice();
@@ -133,27 +139,7 @@ loadData('line_chart_data.csv').then(result => {
 	enterView({
 		selector: '.family__figure',
 		offset: 0.5,
-		enter: function(el) {
-
-			let fam_num = 0;
-
-			timer = setTimeout(animateLines, ms_slow);
-
-			function animateLines() {
-				// if(fam_num < totalLines) {
-				if(fam_num < 100) {
-					if(fam_num < maxLines) {
-						animate(dataByFamily, fam_num, ms_slow);
-						timer = setTimeout(animateLines, ms_slow);
-					}
-					else {
-						animate(dataByFamily, fam_num, ms_fast);
-						timer = setTimeout(animateLines, ms_fast);
-					}
-				}
-				fam_num++;
-			}
-		},
+		enter: function() { timer = setTimeout(animateLines, ms_slow); },
 		once: true,
 	});
 
@@ -163,32 +149,19 @@ loadData('line_chart_data.csv').then(result => {
 
 }).catch(console.error);
 
-function replay() {
-	console.log("replay!");
-
-	// cancel current timer and restart
-	// clear canvas and redraw lines
-	// reset histogram to zero and redraw
-}
-
-function showEnd(countsArray) {
-	// when user clicks the button to skip the animation, cancel the timer, clear canvas
-	// (but redraw background) and show the histogram with data from all families
-	clearTimeout(timer);
-
-	$context.clearRect(0, 0, $canvas.attr('width'), $canvas.attr('height'));
-	addQuintileBackground();
-
-	scaleX_hist.domain([0, scaleX_hist_breakpoints[scaleX_hist_breakpoints.length - 1]]);
-
-	$familyHist__vis.selectAll(".axis.axis--x")
-		.transition()
-		.call(d3.axisBottom(scaleX_hist).ticks(4));
-
-	$bars.data(countsArray)
-		.transition()
-		.duration(500)
-		.attr('width', d => scaleX_hist(d.n));
+function animateLines() {
+	if(fam_num < totalLines) {
+	// if(fam_num < 100) {
+		if(fam_num < maxLines) {
+			animate(dataByFamily, fam_num, ms_slow);
+			timer = setTimeout(animateLines, ms_slow);
+		}
+		else {
+			animate(dataByFamily, fam_num, ms_fast);
+			timer = setTimeout(animateLines, ms_fast);
+		}
+	}
+	fam_num++;
 }
 
 function animate(data, fam_num, ms) {
@@ -253,8 +226,8 @@ function updateHistScaleX() {
 	const scale_current_max = scaleX_hist.domain()[1];
 
 	if(dataMax > scale_current_max) {
-		scaleX_hist.domain([0, scaleX_hist_breakpoints[0]]);
-		scaleX_hist_breakpoints.shift();  // TODO: need to store these in a new array in case user hits the replay button (or make a copy of the original array and .shift on the copy)
+		scaleX_hist.domain([0, scaleX_hist_breakpoints_copy[0]]);
+		scaleX_hist_breakpoints_copy.shift();
 
 		$familyHist__vis.selectAll(".axis.axis--x")
 			.transition()
@@ -301,4 +274,55 @@ function objToArray(obj) {
 	});
 
 	return quintileArray;
+}
+
+function replay() {
+
+	// cancel current timer and clear canvas
+	clearTimeout(timer);
+	$context.clearRect(0, 0, $canvas.attr('width'), $canvas.attr('height'));
+	addQuintileBackground();
+
+	// reset histogram to zero
+	scaleX_hist.domain([0, 150]);
+	scaleX_hist_breakpoints_copy = scaleX_hist_breakpoints.slice();
+
+	histData = [{quintile: 'Lower', n: 0},
+		{quintile: 'Lower Middle', n: 0},
+		{quintile: 'Middle', n: 0},
+		{quintile: 'Upper Middle', n: 0},
+		{quintile: 'Upper', n: 0}];
+
+	$familyHist__vis.selectAll(".axis.axis--x")
+		.transition()
+		.call(d3.axisBottom(scaleX_hist).ticks(4));
+
+	$bars.data(histData)
+		.transition()
+		.duration(500)
+		.attr('width', d => scaleX_hist(d.n));
+
+	// restart animation
+	fam_num = 0;
+	timer = setTimeout(animateLines, ms_slow);
+}
+
+function showEnd(countsArray) {
+	// when user clicks the button to skip the animation, cancel the timer, clear canvas
+	// (but redraw background) and show the histogram with data from all families
+	clearTimeout(timer);
+
+	$context.clearRect(0, 0, $canvas.attr('width'), $canvas.attr('height'));
+	addQuintileBackground();
+
+	scaleX_hist.domain([0, scaleX_hist_breakpoints[scaleX_hist_breakpoints.length - 1]]);
+
+	$familyHist__vis.selectAll(".axis.axis--x")
+		.transition()
+		.call(d3.axisBottom(scaleX_hist).ticks(4));
+
+	$bars.data(countsArray)
+		.transition()
+		.duration(500)
+		.attr('width', d => scaleX_hist(d.n));
 }
