@@ -69,14 +69,6 @@ let histData = [{quintile: 'Lower', n: 0},
 	{quintile: 'Upper Middle', n: 0},
 	{quintile: 'Upper', n: 0}];
 
-// set up line chart
-// let $familyLines__vis = $familyLines__svg.attr('width', familyLines_width + margin.left + margin.right)
-// 	.attr('height', height + margin.top + margin.bottom)
-// 	.append('g')
-// 	.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
-addQuintileBackground();
-
 
 // let $lines = $familyLines__vis.append('g');
 
@@ -126,17 +118,19 @@ loadData('line_chart_data.csv').then(result => {
 	// 	.attr('transform', 'translate(0,' + height + ')')
 	// 	.call(d3.axisBottom(scaleX_line));
 
+	addQuintileBackground();
+
 	$familyHist__vis.append('g')
 		.attr('class', 'axis axis--x')
 		.attr('transform', 'translate(0,' + height + ')')
 		.call(d3.axisBottom(scaleX_hist).ticks(4));
 
-	// try drawing the lines using canvas
-	dataByFamily.forEach(d => {
-		$context.beginPath();
-		line(d.values);
-		$context.stroke();
-	})
+	// // try drawing the lines using canvas
+	// dataByFamily.forEach(d => {
+	// 	$context.beginPath();
+	// 	line(d.values);
+	// 	$context.stroke();
+	// })
 
 	enterView({
 		selector: '.family__figure',
@@ -195,22 +189,13 @@ function animate1(data, fam_num) {
 	// animation function for the first few lines where multiple lines appear on the plot at once
 	// when the next line is drawn, reduce the opacity of previously drawn line and remove the
 	// line entirely when ten more lines are drawn afterwards
+	$context.clearRect(0, 0, $canvas.attr('width'), $canvas.attr('height'));
 
-	// $lines.selectAll('.line.family_' + fam_num)
-	// 	.data(data.filter((d, i) => i == fam_num))
-	// 	.enter()
-	// 	.append('path')
-	// 	.attr('class', (d, i) => 'line family_' + fam_num)
-	// 	.attr('d', d => line(d.values))
-	// 	.style('opacity', 1)
-	// 	.transition()
-	// 	.delay(ms_slow)
-	// 	.style('opacity', 0.05)
-	// 	.transition()
-	// 	.delay(ms_slow * (maxLines - 1))  // it takes 5 seconds (0.25 * 20) to add 20 new lines to the chart
-	// 	.duration(ms_slow)
-	// 	.style('opacity', 0)
-	// 	.remove();
+	addQuintileBackground();
+
+	$context.beginPath();
+	line(data[fam_num].values);
+	$context.stroke();
 
 	updateHistogram(data, fam_num, ms_slow);
 }
@@ -220,16 +205,13 @@ function animate2(data, fam_num) {
 	// because the animation is so fast, only one line appears on the plot at once so
 	// there's no need to fade it out - instead, just remove the line before drawing the next one
 
-	// $lines.selectAll('.line.family_' + fam_num)
-	// 	.data(data.filter((d, i) => i == fam_num))
-	// 	.enter()
-	// 	.append('path')
-	// 	.attr('class', (d, i) => 'line family_' + fam_num)
-	// 	.attr('d', d => line(d.values))
-	// 	.style('opacity', 1)
-	// 	.transition()
-	// 	.delay(ms_fast)
-	// 	.remove();
+	$context.clearRect(0, 0, $canvas.attr('width'), $canvas.attr('height'));
+
+	addQuintileBackground();
+
+	$context.beginPath();
+	line(data[fam_num].values);
+	$context.stroke();
 
 	updateHistogram(data, fam_num, ms_fast);
 }
