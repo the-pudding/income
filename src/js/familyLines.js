@@ -6,6 +6,7 @@ const $family__container = $section.select('.family__figure');
 const $canvas__container = $family__container.select('.canvasContainer');
 const $familyHist__svg = $family__container.select('svg.familyBars_svg');
 
+const $replay__btn = $section.select('.replay');
 const $skipToEnd__btn = $section.select('.skipToEnd');
 
 // dimensions
@@ -70,8 +71,6 @@ let histData = [{quintile: 'Lower', n: 0},
 	{quintile: 'Upper', n: 0}];
 
 
-// let $lines = $familyLines__vis.append('g');
-
 // set up histogram
 let $familyHist__vis = $familyHist__svg.attr('width', familyHist_width + margin_hist.left + margin_hist.right)
 	.attr('height', height + margin.top + margin.bottom)
@@ -135,16 +134,14 @@ loadData('line_chart_data.csv').then(result => {
 		selector: '.family__figure',
 		offset: 0.5,
 		enter: function(el) {
-			// el.classList.add('entered');
-			// console.log("I'm on the screen!");
-			// animateCharts(dataByFamily);
+
 			let fam_num = 0;
 
 			timer = setTimeout(animateLines, ms_slow);
 
 			function animateLines() {
-				if(fam_num < totalLines) {
-				// if(fam_num < 100) {
+				// if(fam_num < totalLines) {
+				if(fam_num < 100) {
 					if(fam_num < maxLines) {
 						animate(dataByFamily, fam_num, ms_slow);
 						timer = setTimeout(animateLines, ms_slow);
@@ -161,9 +158,18 @@ loadData('line_chart_data.csv').then(result => {
 	});
 
 	// event handlers
+	$replay__btn.on('click', () => replay());
 	$skipToEnd__btn.on('click', () => showEnd(countsArray));
 
 }).catch(console.error);
+
+function replay() {
+	console.log("replay!");
+
+	// cancel current timer and restart
+	// clear canvas and redraw lines
+	// reset histogram to zero and redraw
+}
 
 function showEnd(countsArray) {
 	// when user clicks the button to skip the animation, cancel the timer, clear canvas
