@@ -143,14 +143,14 @@ loadData('line_chart_data.csv').then(result => {
 			timer = setTimeout(animateLines, ms_slow);
 
 			function animateLines() {
-				// if(fam_num < totalLines) {
-				if(fam_num < 100) {
+				if(fam_num < totalLines) {
+				// if(fam_num < 100) {
 					if(fam_num < maxLines) {
-						animate1(dataByFamily, fam_num);
+						animate(dataByFamily, fam_num, ms_slow);
 						timer = setTimeout(animateLines, ms_slow);
 					}
 					else {
-						animate2(dataByFamily, fam_num);
+						animate(dataByFamily, fam_num, ms_fast);
 						timer = setTimeout(animateLines, ms_fast);
 					}
 				}
@@ -168,23 +168,23 @@ loadData('line_chart_data.csv').then(result => {
 function showEnd(countsArray) {
 	// when user clicks the button to skip the animation, cancel the timer, remove all lines
 	// from the plot and show the histogram with data from all families
-	clearTimeout(timer);
+	// clearTimeout(timer);
 
-	$lines.selectAll(".line").remove();
+	// $lines.selectAll(".line").remove();
 
-	scaleX_hist.domain([0, scaleX_hist_breakpoints[scaleX_hist_breakpoints.length - 1]]);
+	// scaleX_hist.domain([0, scaleX_hist_breakpoints[scaleX_hist_breakpoints.length - 1]]);
 
-	$familyHist__vis.selectAll(".axis.axis--x")
-		.transition()
-		.call(d3.axisBottom(scaleX_hist).ticks(4));
+	// $familyHist__vis.selectAll(".axis.axis--x")
+	// 	.transition()
+	// 	.call(d3.axisBottom(scaleX_hist).ticks(4));
 
-	$bars.data(countsArray)
-		.transition()
-		.duration(500)
-		.attr('width', d => scaleX_hist(d.n));
+	// $bars.data(countsArray)
+	// 	.transition()
+	// 	.duration(500)
+	// 	.attr('width', d => scaleX_hist(d.n));
 }
 
-function animate1(data, fam_num) {
+function animate(data, fam_num, ms) {
 	// animation function for the first few lines where multiple lines appear on the plot at once
 	// when the next line is drawn, reduce the opacity of previously drawn line and remove the
 	// line entirely when ten more lines are drawn afterwards
@@ -197,33 +197,18 @@ function animate1(data, fam_num) {
 	$context.strokeStyle = 'rgba(28, 28, 28, 1)';
 	$context.stroke();
 
-	// add fade out to previous 9 lines (fam_num - 9) here
-	for(let i = fam_num - 1; i >= 0; i--) {
-		$context.beginPath();
-		line(data[i].values);
-		$context.strokeStyle = 'rgba(28, 28, 28, 0.2)';
-		$context.stroke();
+	// for the first few lines, when the current line is drawn, fade out the
+	// nine previously drawn lines
+	if(fam_num < maxLines) {
+		for(let i = fam_num - 1; i >= 0; i--) {
+			$context.beginPath();
+			line(data[i].values);
+			$context.strokeStyle = 'rgba(28, 28, 28, 0.2)';
+			$context.stroke();
+		}
 	}
 
-
-	updateHistogram(data, fam_num, ms_slow);
-}
-
-function animate2(data, fam_num) {
-	// animation function for the remaining lines when the animation is sped up
-	// because the animation is so fast, only one line appears on the plot at once so
-	// there's no need to fade it out - instead, just remove the line before drawing the next one
-
-	$context.clearRect(0, 0, $canvas.attr('width'), $canvas.attr('height'));
-
-	addQuintileBackground();
-
-	$context.beginPath();
-	line(data[fam_num].values);
-	$context.strokeStyle = 'rgba(28, 28, 28, 1)';
-	$context.stroke();
-
-	updateHistogram(data, fam_num, ms_fast);
+	updateHistogram(data, fam_num, ms);
 }
 
 function updateHistogram(data, fam_num, time) {
@@ -238,69 +223,6 @@ function updateHistogram(data, fam_num, time) {
 		.duration(time)
 		.attr('width', d => scaleX_hist(d.n));
 }
-// function animateCharts(data) {
-// 	// draw first line
-// 	$lines.selectAll('.line.family_0')
-// 		.data(data.filter((d, i) => i == 0))
-// 		.enter()
-// 		.append('path')
-// 		.attr('class', (d, i) => 'line family_' + i)
-// 		.attr('d', d => line(d.values))
-// 		.style('opacity', 1)
-// 		.transition()
-// 		.delay(ms_slow)  // once next line is drawn, reduce the opacity of this line
-// 		.style('opacity', 0.05)
-// 		.transition()
-// 		.delay(ms_slow * maxLines)
-// 		.duration(ms_slow)
-// 		.style('opacity', 0)
-// 		.remove();
-
-// 	let fam_num = 1;
-
-// 	// update histogram with first family's data
-// 	updateHistData(data[0].values);
-// 	$bars.data(histData)
-// 		.transition()
-// 		.duration(ms_slow)
-// 		.attr('width', d => scaleX_hist(d.n));
-
-
-// 	// animate chart
-// 	let t = d3.interval(function(elapsed) {
-// 		// transition lines
-// 		$lines.selectAll('.line.family_' + fam_num)
-// 			.data(data.filter((d, i) => i == fam_num))
-// 			.enter()
-// 			.append('path')
-// 			.attr('class', (d, i) => 'line family_' + fam_num)
-// 			.attr('d', d => line(d.values))
-// 			.style('opacity', 1)
-// 			.transition()
-// 			.delay(ms_slow)
-// 			.style('opacity', 0.05)
-// 			.transition()
-// 			.delay(ms_slow * maxLines)  // it takes 5 seconds (0.25 * 20) to add 20 new lines to the chart
-// 			.duration(ms_slow)
-// 			.style('opacity', 0)
-// 			.remove();
-
-// 		// update histogram
-// 		updateHistData(data[fam_num].values);
-
-// 		// check if we need to update histogram's scaleX
-// 		updateHistScaleX();
-
-// 		$bars.data(histData)
-// 			.transition()
-// 			.duration(ms_slow)
-// 			.attr('width', d => scaleX_hist(d.n));
-
-// 		fam_num++;
-
-// 		if (fam_num === 100) t.stop();
-// 	}, ms_slow);
-// }
 
 function addQuintileBackground() {
 	// shades the part of the plot that corresponds to each quintile with that quintile's color
