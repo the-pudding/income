@@ -26,8 +26,8 @@ let $context = $canvas.node().getContext('2d');
 let timer;
 const maxLines = 10;  // max number of lines that should appear on the chart at any given time
 let ms_slow = 750;  // how much time should elapse before the next line is drawn during the slow phase of the animation
-let ms_fast = 10; // how much time should elapse during the sped up phase of the animation
-// animation will take: (10 * 750) + ((7857-10) * 25) = 86,070 ms or 1.4 min to run
+let ms_fast = 20; // how much time should elapse during the sped up phase of the animation
+// animation will take: (10 * 750) + ((7857-10) * 20) = 164,440 ms or 2.74 min to run
 
 const quintileNames = ["Lower", "Lower Middle", "Middle", "Upper Middle", "Upper"];
 // scales
@@ -95,7 +95,6 @@ loadData('line_chart_data.csv').then(result => {
 	let dataByFamily = d3.nest()
 		.key(d => d.id)
 		.entries(result);
-	console.log(dataByFamily[0].values);
 
 	const totalLines = dataByFamily.length;
 
@@ -144,8 +143,8 @@ loadData('line_chart_data.csv').then(result => {
 			timer = setTimeout(animateLines, ms_slow);
 
 			function animateLines() {
-				// if(fam_num < totalLines) {
-				if(fam_num < 100) {
+				if(fam_num < totalLines) {
+				// if(fam_num < 100) {
 					if(fam_num < maxLines) {
 						animate1(dataByFamily, fam_num);
 						timer = setTimeout(animateLines, ms_slow);
@@ -196,6 +195,8 @@ function animate1(data, fam_num) {
 	$context.beginPath();
 	line(data[fam_num].values);
 	$context.stroke();
+
+	// add fade out to previous 9 lines (fam_num - 9) here
 
 	updateHistogram(data, fam_num, ms_slow);
 }
