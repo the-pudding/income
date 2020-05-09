@@ -33,7 +33,7 @@ const quintileNames = ["Lower", "Lower Middle", "Middle", "Upper Middle", "Upper
 // scales
 const scaleX_line = d3.scaleLinear()
 	// .domain([0, 40])
-	.range([0, familyLines_width]);
+	.range([margin.left, margin.left + familyLines_width]);
 
 const scaleY_line = d3.scaleLinear()
 	.domain([0, 100])
@@ -57,7 +57,8 @@ const line = d3.line()
     // .defined(function(d) { return !isNaN(d.enrollment) && d.enrollment >= 0; })
     .x(d => scaleX_line(d.year))
     .y(d => scaleY_line(d.pctile))
-    .curve(d3.curveStepAfter);
+    .curve(d3.curveStepAfter)
+    .context($context);
 
 // console.log($guess__container.node().offsetWidth, $guess__container.node().offsetHeight)
 
@@ -75,6 +76,7 @@ let histData = [{quintile: 'Lower', n: 0},
 // 	.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
 addQuintileBackground();
+
 
 // let $lines = $familyLines__vis.append('g');
 
@@ -101,7 +103,7 @@ loadData('line_chart_data.csv').then(result => {
 	let dataByFamily = d3.nest()
 		.key(d => d.id)
 		.entries(result);
-	// console.log(dataByFamily.length);
+	console.log(dataByFamily[0].values);
 
 	const totalLines = dataByFamily.length;
 
@@ -128,6 +130,13 @@ loadData('line_chart_data.csv').then(result => {
 		.attr('class', 'axis axis--x')
 		.attr('transform', 'translate(0,' + height + ')')
 		.call(d3.axisBottom(scaleX_hist).ticks(4));
+
+	// try drawing the lines using canvas
+	dataByFamily.forEach(d => {
+		$context.beginPath();
+		line(d.values);
+		$context.stroke();
+	})
 
 	enterView({
 		selector: '.family__figure',
@@ -315,14 +324,6 @@ function addQuintileBackground() {
 		$context.textBaseline = 'middle';
 		$context.fillText(d, margin.left - 10, scaleY_line(i * 20) - (height / 10));
 	});
-
-	// add "y axis"
-	// $background.append('text')
-	// 	.attr('class', 'quintileLabel')
-	// 	.attr('x', -5)
-	// 	.attr('y', (d, i) => scaleY_line(i * 20))
-	// 	.attr('dy', '-1em')
-	// 	.text(d => d);
 }
 
 function updateHistScaleX() {
