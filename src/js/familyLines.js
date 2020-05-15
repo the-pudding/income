@@ -143,9 +143,8 @@ loadData('line_chart_data.csv').then(result => {
 		offset: 0.5,
 		enter: function() {
 			drawFirstLine();
-			timer = setTimeout(animateLines, firstLineLength * ms_slow);
+			timer = setTimeout(animateLines, (firstLineLength + 1) * ms_slow);
 			// timer = setTimeout(animateLines, 0);
-
 		},
 		once: true,
 	});
@@ -180,7 +179,7 @@ function drawFirstLine() {
 
 function animateLines() {
 	if(fam_num < totalLines) {
-	// if(fam_num < 100) {
+	// if(fam_num < 3) {
 		if(fam_num < maxLines) {
 			animate(dataByFamily, fam_num, ms_slow);
 			timer = setTimeout(animateLines, ms_slow);
