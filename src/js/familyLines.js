@@ -146,7 +146,7 @@ loadData('line_chart_data.csv').then(result => {
 		offset: 0.5,
 		enter: function() {
 			drawFirstLine();
-			timer = setTimeout(animateLines, (firstLineLength + 1) * ms_slow);
+			// timer = setTimeout(animateLines, (firstLineLength + 1) * ms_slow);
 			// timer = setTimeout(animateLines, 0);
 		},
 		once: true,
@@ -163,29 +163,51 @@ function drawFirstLine() {
 	// then update histogram
 	let firstLineData = dataByFamily[0].values;
 	let length = 0;
-	let timer2 = setTimeout(drawSegment, ms_slow);
+	let tweenTimer;
+	// let timer2 = setTimeout(drawSegment, ms_slow);
+	drawSegment();
 
 	function drawSegment() {
 		if(length < firstLineData.length) {
-			drawLine(firstLineData.slice(length - 1, length + 1), 1);
+			// drawLine(firstLineData.slice(length - 1, length + 1), 1);
 
 			// let lineLength = 0;
 
-			// if(length > 0) {
-			// 	// console.log(firstLineData[length - 1], firstLineData[length]);
-			// 	let t0 = firstLineData[length - 1];
-			// 	let t1 = firstLineData[length];
-			// 	let x0 = snapToNearestPoint(scaleX_line(t0.year));
-			// 	let x1 = snapToNearestPoint(scaleX_line(t1.year));
-			// 	let y0 = snapToNearestPoint(scaleY_line(t0.pctile));
-			// 	let y1 = snapToNearestPoint(scaleY_line(t1.pctile));
-			// 	lineLength = (x1 - x0) + Math.abs(y1 - y0);
-			// }
+				// console.log(firstLineData[length - 1], firstLineData[length]);
+				let t0 = length > 0 ? firstLineData[length - 1] : firstLineData[0];
+				let t1 = firstLineData[length];
+				let x0 = snapToNearestPoint(scaleX_line(t0.year));
+				let x1 = snapToNearestPoint(scaleX_line(t1.year));
+				let y0 = snapToNearestPoint(scaleY_line(t0.pctile));
+				let y1 = snapToNearestPoint(scaleY_line(t1.pctile));
+				// lineLength = (x1 - x0) + Math.abs(y1 - y0);
+				let prevt = 0;
+
+				let tweenTimer = d3.timer((elapsed) => {
+					const t = Math.min(1, elapsed/ms_slow);
+
+					// drawLine(firstLineData.slice(length - 1, length + 1), 1);
+
+					$context.beginPath();
+					$context.moveTo(x0 * (1 - prevt) + x1 * prevt, y0 * (1 - prevt) + y1 * prevt);
+					$context.lineTo(x0 * (1 - t) + x1 * t, y0 * (1 - t) + y1 * t);
+					$context.lineWidth = 1;
+					$context.strokeStyle = 'rgba(28, 28, 28, 1)';
+					$context.stroke();
+
+					prevt = t;
+
+					if(t === 1) {
+						tweenTimer.stop();
+						drawSegment();
+					}
+				})
+			}
 
 			updateHistogram(firstLineData.slice(length, length + 1), ms_slow / 2);
 
-			timer2 = setTimeout(drawSegment, ms_slow);
-		}
+			// timer2 = setTimeout(drawSegment, ms_slow);
+
 		length++;
 	}
 }
