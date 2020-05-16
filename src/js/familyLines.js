@@ -10,16 +10,19 @@ const $replay__btn = $section.select('.replay');
 const $skipToEnd__btn = $section.select('.skipToEnd');
 
 // dimensions
+const DPR = window.devicePixelRatio ? Math.min(window.devicePixelRatio, 2) : 1;
 const margin = {top: 20, bottom: 40, left: 140, right: 0};
 const margin_hist = {left: 10, right: 20};
-let familyLines_width = $canvas__container.node().getBoundingClientRect().width - margin.left - margin.right;
-let familyHist_width = $familyHist__svg.node().getBoundingClientRect().width - margin_hist.left - margin_hist.right;
-let height = $family__container.node().offsetHeight - margin.top - margin.bottom;
+let familyLines_width = ($canvas__container.node().getBoundingClientRect().width - margin.left - margin.right) * DPR;
+let familyHist_width = ($familyHist__svg.node().getBoundingClientRect().width - margin_hist.left - margin_hist.right) * DPR;
+let height = ($family__container.node().offsetHeight - margin.top - margin.bottom) * DPR;
 
 // add in canvas element
 const $canvas = $canvas__container.append('canvas')
 	.attr('width', familyLines_width + margin.left + margin.right)
-	.attr('height', height);
+	.attr('height', height)
+	.style('width', (familyLines_width + margin.left + margin.right)/DPR + "px")
+	.style('height', height/DPR + "px");
 
 let $context = $canvas.node().getContext('2d');
 
@@ -178,8 +181,8 @@ function drawFirstLine() {
 }
 
 function animateLines() {
-	if(fam_num < totalLines) {
-	// if(fam_num < 3) {
+	// if(fam_num < totalLines) {
+	if(fam_num < 100) {
 		if(fam_num < maxLines) {
 			animate(dataByFamily, fam_num, ms_slow);
 			timer = setTimeout(animateLines, ms_slow);
