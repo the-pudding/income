@@ -180,7 +180,7 @@ function drawFirstLine() {
 				let x1 = snapToNearestPoint(scaleX_line(t1.year));
 				let y0 = snapToNearestPoint(scaleY_line(t0.pctile));
 				let y1 = snapToNearestPoint(scaleY_line(t1.pctile));
-				// lineLength = (x1 - x0) + Math.abs(y1 - y0);
+				let switchToY = (x1 - x0) / ((x1 - x0) + Math.abs(y1 - y0));  // get proportion of time that should be spent animating x versus y by taking ratio of x length to total line segment length
 				let prevt = 0;
 
 				let tweenTimer = d3.timer((elapsed) => {
@@ -189,8 +189,18 @@ function drawFirstLine() {
 					// drawLine(firstLineData.slice(length - 1, length + 1), 1);
 
 					$context.beginPath();
-					$context.moveTo(x0 * (1 - prevt) + x1 * prevt, y0 * (1 - prevt) + y1 * prevt);
-					$context.lineTo(x0 * (1 - t) + x1 * t, y0 * (1 - t) + y1 * t);
+
+					// if t < proportion, only animate x from x0 to x1 (while y = y0)
+					if(t < switchToY) {
+						$context.moveTo(x0 * (1 - prevt) + x1 * prevt, y0);
+						$context.lineTo(x0 * (1 - t) + x1 * t, y0);
+					}
+					// else, if t > proportion, only animate y from y0 to y1 (while x = x1)
+					else {
+						$context.moveTo(x1, y0 * (1 - prevt) + y1 * prevt);
+						$context.lineTo(x1, y0 * (1 - t) + y1 * t);
+					}
+
 					$context.lineWidth = 1;
 					$context.strokeStyle = 'rgba(28, 28, 28, 1)';
 					$context.stroke();
