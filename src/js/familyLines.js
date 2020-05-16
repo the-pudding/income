@@ -65,8 +65,8 @@ const colorScale = d3.scaleOrdinal()
 
 const line = d3.line()
     // .defined(function(d) { return !isNaN(d.enrollment) && d.enrollment >= 0; })
-    .x(d => Math.round(scaleX_line(d.year)) + 0.5)
-    .y(d => Math.round(scaleY_line(d.pctile)) + 0.5)
+    .x(d => snapToNearestPoint(scaleX_line(d.year)))
+    .y(d => snapToNearestPoint(scaleY_line(d.pctile)))
     .curve(d3.curveStepAfter)
     .context($context);
 
@@ -168,7 +168,21 @@ function drawFirstLine() {
 	function drawSegment() {
 		if(length < firstLineData.length) {
 			$context.beginPath();
+			// let lineLength = 0;
+
+			// if(length > 0) {
+			// 	// console.log(firstLineData[length - 1], firstLineData[length]);
+			// 	let t0 = firstLineData[length - 1];
+			// 	let t1 = firstLineData[length];
+			// 	let x0 = snapToNearestPoint(scaleX_line(t0.year));
+			// 	let x1 = snapToNearestPoint(scaleX_line(t1.year));
+			// 	let y0 = snapToNearestPoint(scaleY_line(t0.pctile));
+			// 	let y1 = snapToNearestPoint(scaleY_line(t1.pctile));
+			// 	lineLength = (x1 - x0) + Math.abs(y1 - y0);
+			// }
+
 			line(firstLineData.slice(length - 1, length + 1));
+
 			$context.strokeStyle = 'rgba(28, 28, 28, 1)';
 			$context.stroke();
 
@@ -203,12 +217,6 @@ function animate(data, fam_num, ms) {
 
 	addQuintileBackground();
 
-	$context.beginPath();
-	line(data[fam_num].values);
-	$context.lineWidth = 1;
-	$context.strokeStyle = 'rgba(28, 28, 28, 1)';
-	$context.stroke();
-
 	// for the first few lines, when the current line is drawn, fade out the
 	// nine previously drawn lines
 	if(fam_num < maxLines) {
@@ -220,6 +228,12 @@ function animate(data, fam_num, ms) {
 			$context.stroke();
 		}
 	}
+
+	$context.beginPath();
+	line(data[fam_num].values);
+	$context.lineWidth = 1;
+	$context.strokeStyle = 'rgba(28, 28, 28, 1)';
+	$context.stroke();
 
 	updateHistogram(data[fam_num].values, ms);
 }
@@ -360,4 +374,10 @@ function showEnd(countsArray) {
 		.transition()
 		.duration(500)
 		.attr('width', d => scaleX_hist(d.n));
+}
+
+function snapToNearestPoint(value) {
+	// rounds pixel value to nearest half point
+	// needed to improve sharpness of lines in canvas
+	return Math.round(value) + 0.5;
 }
