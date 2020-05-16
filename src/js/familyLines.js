@@ -167,7 +167,8 @@ function drawFirstLine() {
 
 	function drawSegment() {
 		if(length < firstLineData.length) {
-			$context.beginPath();
+			drawLine(firstLineData.slice(length - 1, length + 1), 1);
+
 			// let lineLength = 0;
 
 			// if(length > 0) {
@@ -180,11 +181,6 @@ function drawFirstLine() {
 			// 	let y1 = snapToNearestPoint(scaleY_line(t1.pctile));
 			// 	lineLength = (x1 - x0) + Math.abs(y1 - y0);
 			// }
-
-			line(firstLineData.slice(length - 1, length + 1));
-
-			$context.strokeStyle = 'rgba(28, 28, 28, 1)';
-			$context.stroke();
 
 			updateHistogram(firstLineData.slice(length, length + 1), ms_slow / 2);
 
@@ -217,23 +213,14 @@ function animate(data, fam_num, ms) {
 
 	addQuintileBackground();
 
-	// for the first few lines, when the current line is drawn, fade out the
-	// nine previously drawn lines
+	// for the first few lines, first fade out the nine previously drawn lines
 	if(fam_num < maxLines) {
 		for(let i = fam_num - 1; i >= 0; i--) {
-			$context.beginPath();
-			line(data[i].values);
-			$context.lineWidth = 1;
-			$context.strokeStyle = 'rgba(28, 28, 28, 0.1)';
-			$context.stroke();
+			drawLine(data[i].values, 0.1);
 		}
 	}
 
-	$context.beginPath();
-	line(data[fam_num].values);
-	$context.lineWidth = 1;
-	$context.strokeStyle = 'rgba(28, 28, 28, 1)';
-	$context.stroke();
+	drawLine(data[fam_num].values, 1);
 
 	updateHistogram(data[fam_num].values, ms);
 }
@@ -249,6 +236,16 @@ function updateHistogram(data, time) {
 		.transition()
 		.duration(time)
 		.attr('width', d => scaleX_hist(d.n));
+}
+
+function drawLine(data, opacity) {
+	// given data, draws a line using canvas by feeding the data to d3's line generator
+
+	$context.beginPath();
+	line(data);
+	$context.lineWidth = 1;
+	$context.strokeStyle = `rgba(28, 28, 28, ${opacity})`;
+	$context.stroke();
 }
 
 function addQuintileBackground() {
