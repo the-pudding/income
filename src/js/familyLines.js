@@ -65,8 +65,8 @@ const colorScale = d3.scaleOrdinal()
 
 const line = d3.line()
     // .defined(function(d) { return !isNaN(d.enrollment) && d.enrollment >= 0; })
-    .x(d => scaleX_line(d.year))     // way to round this to nearest .5 pixel? (see if that makes line sharper in canvas)
-    .y(d => scaleY_line(d.pctile))   // way to round this to nearest .5 pixel?
+    .x(d => Math.round(scaleX_line(d.year)) + 0.5)
+    .y(d => Math.round(scaleY_line(d.pctile)) + 0.5)
     .curve(d3.curveStepAfter)
     .context($context);
 
@@ -205,6 +205,7 @@ function animate(data, fam_num, ms) {
 
 	$context.beginPath();
 	line(data[fam_num].values);
+	$context.lineWidth = 1;
 	$context.strokeStyle = 'rgba(28, 28, 28, 1)';
 	$context.stroke();
 
@@ -214,6 +215,7 @@ function animate(data, fam_num, ms) {
 		for(let i = fam_num - 1; i >= 0; i--) {
 			$context.beginPath();
 			line(data[i].values);
+			$context.lineWidth = 1;
 			$context.strokeStyle = 'rgba(28, 28, 28, 0.1)';
 			$context.stroke();
 		}
