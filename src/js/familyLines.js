@@ -190,19 +190,22 @@ function drawFirstLine() {
 				if(t < switchToY) {
 					$context.moveTo(last_x, y0);
 					$context.lineTo(next_x, y0);
+
+					last_x = next_x;
+					last_y = y0;
 				}
 				// else, if t > proportion, only animate y from y0 to y1 (while x = x1)
 				else {
 					$context.moveTo(x1, last_y);
 					$context.lineTo(x1, next_y);
+
+					last_x = x1;
+					last_y = next_y;
 				}
 
 				$context.lineWidth = 1;
 				$context.strokeStyle = 'rgba(28, 28, 28, 1)';
 				$context.stroke();
-
-				last_x = next_x;
-				last_y = next_y;
 
 				if(t === 1) {
 					tweenTimer.stop();
