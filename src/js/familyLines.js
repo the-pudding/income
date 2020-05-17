@@ -146,7 +146,7 @@ loadData('line_chart_data.csv').then(result => {
 		offset: 0.5,
 		enter: function() {
 			drawFirstLine();
-			// timer = setTimeout(animateLines, (firstLineLength + 1) * ms_slow);
+			timer = setTimeout(animateLines, (firstLineLength + 1) * ms_slow);
 			// timer = setTimeout(animateLines, 0);
 		},
 		once: true,
@@ -164,59 +164,54 @@ function drawFirstLine() {
 	let firstLineData = dataByFamily[0].values;
 	let length = 0;
 	let tweenTimer;
-	// let timer2 = setTimeout(drawSegment, ms_slow);
 	drawSegment();
 
 	function drawSegment() {
 		if(length < firstLineData.length) {
-			// drawLine(firstLineData.slice(length - 1, length + 1), 1);
+			let t0 = length > 0 ? firstLineData[length - 1] : firstLineData[0];
+			let t1 = firstLineData[length];
+			let x0 = snapToNearestPoint(scaleX_line(t0.year));
+			let x1 = snapToNearestPoint(scaleX_line(t1.year));
+			let y0 = snapToNearestPoint(scaleY_line(t0.pctile));
+			let y1 = snapToNearestPoint(scaleY_line(t1.pctile));
+			let switchToY = (x1 - x0) / ((x1 - x0) + Math.abs(y1 - y0));  // get proportion of time that should be spent animating x versus y by taking ratio of x length to total line segment length
+			let last_x = x0;
+			let last_y = y0;
 
-			// let lineLength = 0;
 
-				// console.log(firstLineData[length - 1], firstLineData[length]);
-				let t0 = length > 0 ? firstLineData[length - 1] : firstLineData[0];
-				let t1 = firstLineData[length];
-				let x0 = snapToNearestPoint(scaleX_line(t0.year));
-				let x1 = snapToNearestPoint(scaleX_line(t1.year));
-				let y0 = snapToNearestPoint(scaleY_line(t0.pctile));
-				let y1 = snapToNearestPoint(scaleY_line(t1.pctile));
-				let switchToY = (x1 - x0) / ((x1 - x0) + Math.abs(y1 - y0));  // get proportion of time that should be spent animating x versus y by taking ratio of x length to total line segment length
-				let prevt = 0;
+			let tweenTimer = d3.timer((elapsed) => {
+				const t = Math.min(1, elapsed/ms_slow);
+				const next_x = x0 * (1 - (t/switchToY)) + x1 * (t/switchToY);
+				const next_y = y0 * ((1 - t) / (1 - switchToY)) + y1 * ((t - switchToY)/ (1 - switchToY));
 
-				let tweenTimer = d3.timer((elapsed) => {
-					const t = Math.min(1, elapsed/ms_slow);
+				$context.beginPath();
 
-					// drawLine(firstLineData.slice(length - 1, length + 1), 1);
+				// if t < proportion, only animate x from x0 to x1 (while y = y0)
+				if(t < switchToY) {
+					$context.moveTo(last_x, y0);
+					$context.lineTo(next_x, y0);
+				}
+				// else, if t > proportion, only animate y from y0 to y1 (while x = x1)
+				else {
+					$context.moveTo(x1, last_y);
+					$context.lineTo(x1, next_y);
+				}
 
-					$context.beginPath();
+				$context.lineWidth = 1;
+				$context.strokeStyle = 'rgba(28, 28, 28, 1)';
+				$context.stroke();
 
-					// if t < proportion, only animate x from x0 to x1 (while y = y0)
-					if(t < switchToY) {
-						$context.moveTo(x0 * (1 - prevt) + x1 * prevt, y0);
-						$context.lineTo(x0 * (1 - t) + x1 * t, y0);
-					}
-					// else, if t > proportion, only animate y from y0 to y1 (while x = x1)
-					else {
-						$context.moveTo(x1, y0 * (1 - prevt) + y1 * prevt);
-						$context.lineTo(x1, y0 * (1 - t) + y1 * t);
-					}
+				last_x = next_x;
+				last_y = next_y;
 
-					$context.lineWidth = 1;
-					$context.strokeStyle = 'rgba(28, 28, 28, 1)';
-					$context.stroke();
+				if(t === 1) {
+					tweenTimer.stop();
+					drawSegment();
+				}
+			})
+		}
 
-					prevt = t;
-
-					if(t === 1) {
-						tweenTimer.stop();
-						drawSegment();
-					}
-				})
-			}
-
-			updateHistogram(firstLineData.slice(length, length + 1), ms_slow / 2);
-
-			// timer2 = setTimeout(drawSegment, ms_slow);
+		updateHistogram(firstLineData.slice(length, length + 1), ms_slow / 2);
 
 		length++;
 	}
