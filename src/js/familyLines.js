@@ -180,7 +180,7 @@ function drawFirstLine() {
 			let last_y = y0;
 
 
-			let tweenTimer = d3.timer((elapsed) => {
+			tweenTimer = d3.timer((elapsed) => {
 				const t = Math.min(1, elapsed/ms_slow);
 				const next_x = x0 * (1 - (t/switchToY)) + x1 * (t/switchToY);
 				const next_y = y0 * ((1 - t) / (1 - switchToY)) + y1 * ((t - switchToY)/ (1 - switchToY));
@@ -360,8 +360,9 @@ function objToArray(obj) {
 function replay() {
 
 	// cancel current timer and clear canvas
+	tweenTimer.stop();
 	clearTimeout(timer);
-	clearTimeout(tweenTimer);
+
 	$context.clearRect(0, 0, $canvas.attr('width'), $canvas.attr('height'));
 	addQuintileBackground();
 
@@ -394,8 +395,8 @@ function replay() {
 function showEnd(countsArray) {
 	// when user clicks the button to skip the animation, cancel the timer, clear canvas
 	// (but redraw background) and show the histogram with data from all families
-	clearTimeout(timer);
 	tweenTimer.stop();
+	clearTimeout(timer);
 
 	$context.clearRect(0, 0, $canvas.attr('width'), $canvas.attr('height'));
 	addQuintileBackground();
