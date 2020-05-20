@@ -28,6 +28,7 @@ let $context = $canvas.node().getContext('2d');
 
 // parameters for line chart animation
 let timer;
+let tweenTimer;
 const maxLines = 10;  // max number of lines that should appear on the chart at any given time
 let ms_slow = 1000;  // how much time should elapse before the next line is drawn during the slow phase of the animation
 let ms_fast = 20; // how much time should elapse during the sped up phase of the animation
@@ -163,7 +164,7 @@ function drawFirstLine() {
 	// then update histogram
 	let firstLineData = dataByFamily[0].values;
 	let length = 0;
-	let tweenTimer;
+	// let tweenTimer;
 	drawSegment();
 
 	function drawSegment() {
@@ -196,6 +197,12 @@ function drawFirstLine() {
 				}
 				// else, if t > proportion, only animate y from y0 to y1 (while x = x1)
 				else {
+					if(last_x < x1 && next_x >= x1) {
+						// if during the last t, the line didn't quite get to x1, complete the horizontal section first
+						$context.moveTo(last_x, y0);
+						$context.lineTo(x1, y0);
+					}
+
 					$context.moveTo(x1, last_y);
 					$context.lineTo(x1, next_y);
 
@@ -221,8 +228,8 @@ function drawFirstLine() {
 }
 
 function animateLines() {
-	// if(fam_num < totalLines) {
-	if(fam_num < 100) {
+	if(fam_num < totalLines) {
+	// if(fam_num < 100) {
 		if(fam_num < maxLines) {
 			animate(dataByFamily, fam_num, ms_slow);
 			timer = setTimeout(animateLines, ms_slow);
@@ -354,6 +361,7 @@ function replay() {
 
 	// cancel current timer and clear canvas
 	clearTimeout(timer);
+	clearTimeout(tweenTimer);
 	$context.clearRect(0, 0, $canvas.attr('width'), $canvas.attr('height'));
 	addQuintileBackground();
 
@@ -387,6 +395,7 @@ function showEnd(countsArray) {
 	// when user clicks the button to skip the animation, cancel the timer, clear canvas
 	// (but redraw background) and show the histogram with data from all families
 	clearTimeout(timer);
+	tweenTimer.stop();
 
 	$context.clearRect(0, 0, $canvas.attr('width'), $canvas.attr('height'));
 	addQuintileBackground();
