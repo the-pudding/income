@@ -32,7 +32,7 @@ let tweenTimer;
 const maxLines = 10;  // max number of lines that should appear on the chart at any given time
 let ms_slow = 1000;  // how much time should elapse before the next line is drawn during the slow phase of the animation
 let ms_fast = 20; // how much time should elapse during the sped up phase of the animation
-// animation will take: (10 * 750) + ((7857-10) * 20) = 164,440 ms or 2.74 min to run
+// animation will take: (30 * 1000) + (10 * 1000) + ((7857-10) * 20) = 196,940 ms or 3.28 min to run
 let fam_num = 1;
 
 let dataByFamily;
@@ -65,13 +65,11 @@ const colorScale = d3.scaleOrdinal()
 	.range(["#f9cdce", "#fbdddd", "#fcf5db", "#e1f5ea", "#d4f1df"]);
 
 const line = d3.line()
-    // .defined(function(d) { return !isNaN(d.enrollment) && d.enrollment >= 0; })
     .x(d => snapToNearestPoint(scaleX_line(d.year)))
     .y(d => snapToNearestPoint(scaleY_line(d.pctile)))
     .curve(d3.curveStepAfter)
     .context($context);
 
-// console.log($guess__container.node().offsetWidth, $guess__container.node().offsetHeight)
 
 // initial data for the histogram
 let histData = [{quintile: 'Lower', n: 0},
@@ -99,22 +97,18 @@ let $bars = $familyHist__vis.selectAll('.bar')
 	.style('fill', d => colorScale(d.quintile));
 
 loadData('line_chart_data.csv').then(result => {
-	// console.log(result);
+
 	// nest data because that's the structure d3 needs to make line charts
 	dataByFamily = d3.nest()
 		.key(d => d.id)
 		.entries(result);
-// console.log(dataByFamily[0]);
+
 	totalLines = dataByFamily.length;
 
 	// set scale domains
 	scaleX_line.domain([0, d3.max(result, d => +d.year)]).nice();
 	const counts = countFrequency(result);
 	let countsArray = objToArray(counts);
-
-	// scaleX_hist.domain([0, d3.max(countsArray, d => d.n)]);
-	// console.log(scaleX_hist.domain());
-	// console.log(dataByFamily[0]);
 
 	// append axis for debugging purposes
 	// $familyLines__vis.append('g')
@@ -132,13 +126,6 @@ loadData('line_chart_data.csv').then(result => {
 		.attr('class', 'axis axis--x')
 		.attr('transform', 'translate(0,' + height + ')')
 		.call(d3.axisBottom(scaleX_hist).ticks(4));
-
-	// // try drawing the lines using canvas
-	// dataByFamily.forEach(d => {
-	// 	$context.beginPath();
-	// 	line(d.values);
-	// 	$context.stroke();
-	// })
 
 	let firstLineLength = dataByFamily[0].values.length;
 
@@ -164,7 +151,7 @@ function drawFirstLine() {
 	// then update histogram
 	let firstLineData = dataByFamily[0].values;
 	let length = 0;
-	// let tweenTimer;
+
 	drawSegment();
 
 	function drawSegment() {
@@ -277,7 +264,6 @@ function updateHistogram(data, time) {
 
 function drawLine(data, opacity) {
 	// given data, draws a line using canvas by feeding the data to d3's line generator
-
 	$context.beginPath();
 	line(data);
 	$context.lineWidth = 1;
