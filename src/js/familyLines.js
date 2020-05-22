@@ -85,16 +85,26 @@ let $familyHist__vis = $familyHist__svg.attr('width', familyHist_width + margin_
 	.append('g')
 	.attr('transform', 'translate(' + margin_hist.left + ',' + margin.top + ')');
 
-let $bars = $familyHist__vis.selectAll('.bar')
+let $bar_group = $familyHist__vis.selectAll('.bar_group')
 	.data(histData)
 	.enter()
-	.append('rect')
+	.append('g')
+	.attr('class', 'bar_group');
+
+let $bars = $bar_group.append('rect')
 	.attr('class', 'bar')
 	.attr('x', 0)
 	.attr('y', d => scaleY_hist(d.quintile))
 	.attr('width', d => scaleX_hist(d.n))
 	.attr('height', scaleY_hist.bandwidth())
 	.style('fill', d => colorScale(d.quintile));
+
+let $bar_labels = $bar_group.append('text')
+	.attr('class', 'label')
+	.attr('x', 5)
+	.attr('y', d => scaleY_hist(d.quintile) + scaleY_hist.bandwidth()/2)
+	.attr('dy', '.5em')
+	.text(d => d.n);
 
 loadData('line_chart_data.csv').then(result => {
 
@@ -249,19 +259,6 @@ function animate(data, fam_num, ms) {
 	updateHistogram(data[fam_num].values, ms);
 }
 
-function updateHistogram(data, time) {
-	// update histogram
-	updateHistData(data);
-
-	// check if we need to update histogram's scaleX
-	updateHistScaleX();
-
-	$bars.data(histData)
-		.transition()
-		.duration(time)
-		.attr('width', d => scaleX_hist(d.n));
-}
-
 function drawLine(data, opacity) {
 	// given data, draws a line using canvas by feeding the data to d3's line generator
 	$context.beginPath();
@@ -285,6 +282,26 @@ function addQuintileBackground() {
 		$context.textBaseline = 'middle';
 		$context.fillText(d, margin.left - 10, scaleY_line(i * 20) - (height / 10));
 	});
+}
+
+function updateHistogram(data, time) {
+	// update histogram data
+	updateHistData(data);
+
+	// check if we need to update histogram's scaleX
+	updateHistScaleX();
+
+	// update histogram bars and labels
+	$bar_group.data(histData);
+
+	$bars.transition()
+		.duration(time)
+		.attr('width', d => scaleX_hist(d.n));
+
+	$bar_labels.transition()
+		.duration(time)
+		.attr('x', d => scaleX_hist(d.n) + 5)
+		.text(d => d.n);
 }
 
 function updateHistScaleX() {
@@ -366,10 +383,18 @@ function replay() {
 		.transition()
 		.call(d3.axisBottom(scaleX_hist).ticks(4));
 
-	$bars.data(histData)
+	$bar_group.data(histData);
+
+	$bar_group.select('.bar')
 		.transition()
 		.duration(500)
 		.attr('width', d => scaleX_hist(d.n));
+
+	$bar_group.select('.label')
+		.transition()
+		.duration(500)
+		.attr('x', 5)
+		.text(d => d.n);
 
 	// restart animation
 	fam_num = 1;
@@ -393,10 +418,18 @@ function showEnd(countsArray) {
 		.transition()
 		.call(d3.axisBottom(scaleX_hist).ticks(4));
 
-	$bars.data(countsArray)
+	$bar_group.data(countsArray);
+
+	$bar_group.select('.bar')
 		.transition()
 		.duration(500)
 		.attr('width', d => scaleX_hist(d.n));
+
+	$bar_group.select('.label')
+		.transition()
+		.duration(500)
+		.attr('x', d => scaleX_hist(d.n) + 5)
+		.text(d => d.n);
 }
 
 function snapToNearestPoint(value) {
