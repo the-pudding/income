@@ -3,40 +3,58 @@ import enterView from 'enter-view';
 
 const $section = d3.select('.familyLines');
 const $family__container = $section.select('.family__figure');
-const $familyLines__svg = $family__container.select('svg.familyLines_svg');
+const $canvas__container = $family__container.select('.canvasContainer');
 const $familyHist__svg = $family__container.select('svg.familyBars_svg');
 
+const $replay__btn = $section.select('.replay');
 const $skipToEnd__btn = $section.select('.skipToEnd');
 
 // dimensions
+const DPR = window.devicePixelRatio ? Math.min(window.devicePixelRatio, 2) : 1;
 const margin = {top: 20, bottom: 40, left: 140, right: 0};
 const margin_hist = {left: 10, right: 20};
-let familyLines_width = $familyLines__svg.node().getBoundingClientRect().width - margin.left - margin.right;
-let familyHist_width = $familyHist__svg.node().getBoundingClientRect().width - margin_hist.left - margin_hist.right;
-let height = $family__container.node().offsetHeight - margin.top - margin.bottom;
+let familyLines_width = ($canvas__container.node().getBoundingClientRect().width - margin.left - margin.right) * DPR;
+let familyHist_width = ($familyHist__svg.node().getBoundingClientRect().width - margin_hist.left - margin_hist.right) * DPR;
+let height = ($family__container.node().offsetHeight - margin.top - margin.bottom) * DPR;
+
+// add in canvas element
+const $canvas = $canvas__container.append('canvas')
+	.attr('width', familyLines_width + margin.left + margin.right)
+	.attr('height', height)
+	.style('width', (familyLines_width + margin.left + margin.right)/DPR + "px")
+	.style('height', height/DPR + "px");
+
+let $context = $canvas.node().getContext('2d');
 
 // parameters for line chart animation
 let timer;
+let tweenTimer;
 const maxLines = 10;  // max number of lines that should appear on the chart at any given time
-let ms_slow = 750;  // how much time should elapse before the next line is drawn during the slow phase of the animation
-let ms_fast = 10; // how much time should elapse during the sped up phase of the animation
-// animation will take: (10 * 750) + ((7857-10) * 25) = 86,070 ms or 1.4 min to run
+let ms_slow = 1000;  // how much time should elapse before the next line is drawn during the slow phase of the animation
+let ms_fast = 20; // how much time should elapse during the sped up phase of the animation
+// animation will take: (30 * 1000) + (10 * 1000) + ((7857-10) * 20) = 196,940 ms or 3.28 min to run
+let fam_num = 1;
 
-const quintileNames = ["Lower", "Lower Middle", "Middle", "Upper Middle", "Upper"];
+let dataByFamily;
+let totalLines;
+
 // scales
+const quintileNames = ["Lower", "Lower Middle", "Middle", "Upper Middle", "Upper"];
+
 const scaleX_line = d3.scaleLinear()
 	// .domain([0, 40])
-	.range([0, familyLines_width]);
+	.range([margin.left, margin.left + familyLines_width]);
 
 const scaleY_line = d3.scaleLinear()
 	.domain([0, 100])
 	.range([height, 0]);
 
 const scaleX_hist = d3.scaleLinear()
-	.domain([0, 150])
+	.domain([0, 20])
 	.range([0, familyHist_width]);
 
-let scaleX_hist_breakpoints = [500, 1000, 5000, 10000, 20000, 30000, 43000];
+const scaleX_hist_breakpoints = [100, 500, 1000, 5000, 10000, 20000, 30000, 43000];
+let scaleX_hist_breakpoints_copy = scaleX_hist_breakpoints.slice();
 
 const scaleY_hist = d3.scaleBand()
 	.domain(quintileNames)
@@ -47,12 +65,11 @@ const colorScale = d3.scaleOrdinal()
 	.range(["#f9cdce", "#fbdddd", "#fcf5db", "#e1f5ea", "#d4f1df"]);
 
 const line = d3.line()
-    // .defined(function(d) { return !isNaN(d.enrollment) && d.enrollment >= 0; })
-    .x(d => scaleX_line(d.year))
-    .y(d => scaleY_line(d.pctile))
-    .curve(d3.curveStepAfter);
+    .x(d => snapToNearestPoint(scaleX_line(d.year)))
+    .y(d => snapToNearestPoint(scaleY_line(d.pctile)))
+    .curve(d3.curveStepAfter)
+    .context($context);
 
-// console.log($guess__container.node().offsetWidth, $guess__container.node().offsetHeight)
 
 // initial data for the histogram
 let histData = [{quintile: 'Lower', n: 0},
@@ -61,15 +78,6 @@ let histData = [{quintile: 'Lower', n: 0},
 	{quintile: 'Upper Middle', n: 0},
 	{quintile: 'Upper', n: 0}];
 
-// set up line chart
-let $familyLines__vis = $familyLines__svg.attr('width', familyLines_width + margin.left + margin.right)
-	.attr('height', height + margin.top + margin.bottom)
-	.append('g')
-	.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
-addQuintileBackground($familyLines__vis);
-
-let $lines = $familyLines__vis.append('g');
 
 // set up histogram
 let $familyHist__vis = $familyHist__svg.attr('width', familyHist_width + margin_hist.left + margin_hist.right)
@@ -77,10 +85,13 @@ let $familyHist__vis = $familyHist__svg.attr('width', familyHist_width + margin_
 	.append('g')
 	.attr('transform', 'translate(' + margin_hist.left + ',' + margin.top + ')');
 
-let $bars = $familyHist__vis.selectAll('.bar')
+let $bar_group = $familyHist__vis.selectAll('.bar_group')
 	.data(histData)
 	.enter()
-	.append('rect')
+	.append('g')
+	.attr('class', 'bar_group');
+
+let $bars = $bar_group.append('rect')
 	.attr('class', 'bar')
 	.attr('x', 0)
 	.attr('y', d => scaleY_hist(d.quintile))
@@ -88,24 +99,26 @@ let $bars = $familyHist__vis.selectAll('.bar')
 	.attr('height', scaleY_hist.bandwidth())
 	.style('fill', d => colorScale(d.quintile));
 
+let $bar_labels = $bar_group.append('text')
+	.attr('class', 'label')
+	.attr('x', 5)
+	.attr('y', d => scaleY_hist(d.quintile) + scaleY_hist.bandwidth()/2)
+	.attr('dy', '.5em')
+	.text(d => d.n);
+
 loadData('line_chart_data.csv').then(result => {
-	// console.log(result);
+
 	// nest data because that's the structure d3 needs to make line charts
-	let dataByFamily = d3.nest()
+	dataByFamily = d3.nest()
 		.key(d => d.id)
 		.entries(result);
-	// console.log(dataByFamily.length);
 
-	const totalLines = dataByFamily.length;
+	totalLines = dataByFamily.length;
 
 	// set scale domains
 	scaleX_line.domain([0, d3.max(result, d => +d.year)]).nice();
 	const counts = countFrequency(result);
 	let countsArray = objToArray(counts);
-
-	// scaleX_hist.domain([0, d3.max(countsArray, d => d.n)]);
-	// console.log(scaleX_hist.domain());
-	// console.log(dataByFamily[0]);
 
 	// append axis for debugging purposes
 	// $familyLines__vis.append('g')
@@ -117,209 +130,178 @@ loadData('line_chart_data.csv').then(result => {
 	// 	.attr('transform', 'translate(0,' + height + ')')
 	// 	.call(d3.axisBottom(scaleX_line));
 
+	addQuintileBackground();
+
 	$familyHist__vis.append('g')
 		.attr('class', 'axis axis--x')
 		.attr('transform', 'translate(0,' + height + ')')
 		.call(d3.axisBottom(scaleX_hist).ticks(4));
 
+	let firstLineLength = dataByFamily[0].values.length;
+
 	enterView({
 		selector: '.family__figure',
 		offset: 0.5,
-		enter: function(el) {
-			// el.classList.add('entered');
-			// console.log("I'm on the screen!");
-			// animateCharts(dataByFamily);
-			let fam_num = 0;
-
-			timer = setTimeout(animateLines, ms_slow);
-
-			function animateLines() {
-				if(fam_num < totalLines) {
-				// if(fam_num < 100) {
-					if(fam_num < maxLines) {
-						animate1(dataByFamily, fam_num);
-						timer = setTimeout(animateLines, ms_slow);
-					}
-					else {
-						animate2(dataByFamily, fam_num);
-						timer = setTimeout(animateLines, ms_fast);
-					}
-				}
-				fam_num++;
-			}
+		enter: function() {
+			drawFirstLine();
+			timer = setTimeout(animateLines, (firstLineLength + 1) * ms_slow);
+			// timer = setTimeout(animateLines, 0);
 		},
 		once: true,
 	});
 
 	// event handlers
+	$replay__btn.on('click', () => replay());
 	$skipToEnd__btn.on('click', () => showEnd(countsArray));
 
 }).catch(console.error);
 
-function showEnd(countsArray) {
-	// when user clicks the button to skip the animation, cancel the timer, remove all lines
-	// from the plot and show the histogram with data from all families
-	clearTimeout(timer);
+function drawFirstLine() {
+	// loop through data, call canvas to draw incrementally to add next year of data to line
+	// then update histogram
+	let firstLineData = dataByFamily[0].values;
+	let length = 0;
 
-	$lines.selectAll(".line").remove();
+	drawSegment();
 
-	scaleX_hist.domain([0, scaleX_hist_breakpoints[scaleX_hist_breakpoints.length - 1]]);
+	function drawSegment() {
+		if(length < firstLineData.length) {
+			let t0 = length > 0 ? firstLineData[length - 1] : firstLineData[0];
+			let t1 = firstLineData[length];
+			let x0 = snapToNearestPoint(scaleX_line(t0.year));
+			let x1 = snapToNearestPoint(scaleX_line(t1.year));
+			let y0 = snapToNearestPoint(scaleY_line(t0.pctile));
+			let y1 = snapToNearestPoint(scaleY_line(t1.pctile));
+			let switchToY = (x1 - x0) / ((x1 - x0) + Math.abs(y1 - y0));  // get proportion of time that should be spent animating x versus y by taking ratio of x length to total line segment length
+			let last_x = x0;
+			let last_y = y0;
 
-	$familyHist__vis.selectAll(".axis.axis--x")
-		.transition()
-		.call(d3.axisBottom(scaleX_hist).ticks(4));
 
-	$bars.data(countsArray)
-		.transition()
-		.duration(500)
-		.attr('width', d => scaleX_hist(d.n));
+			tweenTimer = d3.timer((elapsed) => {
+				const t = Math.min(1, elapsed/ms_slow);
+				const next_x = x0 * (1 - (t/switchToY)) + x1 * (t/switchToY);
+				const next_y = y0 * ((1 - t) / (1 - switchToY)) + y1 * ((t - switchToY)/ (1 - switchToY));
+
+				$context.beginPath();
+
+				// if t < proportion, only animate x from x0 to x1 (while y = y0)
+				if(t < switchToY) {
+					$context.moveTo(last_x, y0);
+					$context.lineTo(next_x, y0);
+
+					last_x = next_x;
+					last_y = y0;
+				}
+				// else, if t > proportion, only animate y from y0 to y1 (while x = x1)
+				else {
+					if(last_x < x1 && next_x >= x1) {
+						// if during the last t, the line didn't quite get to x1, complete the horizontal section first
+						$context.moveTo(last_x, y0);
+						$context.lineTo(x1, y0);
+					}
+
+					$context.moveTo(x1, last_y);
+					$context.lineTo(x1, next_y);
+
+					last_x = x1;
+					last_y = next_y;
+				}
+
+				$context.lineWidth = 1;
+				$context.strokeStyle = 'rgba(28, 28, 28, 1)';
+				$context.stroke();
+
+				if(t === 1) {
+					tweenTimer.stop();
+					drawSegment();
+				}
+			})
+		}
+
+		updateHistogram(firstLineData.slice(length, length + 1), ms_slow / 2);
+
+		length++;
+	}
 }
 
-function animate1(data, fam_num) {
+function animateLines() {
+	if(fam_num < totalLines) {
+	// if(fam_num < 100) {
+		if(fam_num < maxLines) {
+			animate(dataByFamily, fam_num, ms_slow);
+			timer = setTimeout(animateLines, ms_slow);
+		}
+		else {
+			animate(dataByFamily, fam_num, ms_fast);
+			timer = setTimeout(animateLines, ms_fast);
+		}
+	}
+	fam_num++;
+}
+
+function animate(data, fam_num, ms) {
 	// animation function for the first few lines where multiple lines appear on the plot at once
 	// when the next line is drawn, reduce the opacity of previously drawn line and remove the
 	// line entirely when ten more lines are drawn afterwards
+	$context.clearRect(0, 0, $canvas.attr('width'), $canvas.attr('height'));
 
-	$lines.selectAll('.line.family_' + fam_num)
-		.data(data.filter((d, i) => i == fam_num))
-		.enter()
-		.append('path')
-		.attr('class', (d, i) => 'line family_' + fam_num)
-		.attr('d', d => line(d.values))
-		.style('opacity', 1)
-		.transition()
-		.delay(ms_slow)
-		.style('opacity', 0.05)
-		.transition()
-		.delay(ms_slow * (maxLines - 1))  // it takes 5 seconds (0.25 * 20) to add 20 new lines to the chart
-		.duration(ms_slow)
-		.style('opacity', 0)
-		.remove();
+	addQuintileBackground();
 
-	updateHistogram(data, fam_num, ms_slow);
+	// for the first few lines, first fade out the nine previously drawn lines
+	if(fam_num < maxLines) {
+		for(let i = fam_num - 1; i >= 0; i--) {
+			drawLine(data[i].values, 0.1);
+		}
+	}
+
+	drawLine(data[fam_num].values, 1);
+
+	updateHistogram(data[fam_num].values, ms);
 }
 
-function animate2(data, fam_num) {
-	// animation function for the remaining lines when the animation is sped up
-	// because the animation is so fast, only one line appears on the plot at once so
-	// there's no need to fade it out - instead, just remove the line before drawing the next one
-
-	$lines.selectAll('.line.family_' + fam_num)
-		.data(data.filter((d, i) => i == fam_num))
-		.enter()
-		.append('path')
-		.attr('class', (d, i) => 'line family_' + fam_num)
-		.attr('d', d => line(d.values))
-		.style('opacity', 1)
-		.transition()
-		.delay(ms_fast)
-		.remove();
-
-	updateHistogram(data, fam_num, ms_fast);
+function drawLine(data, opacity) {
+	// given data, draws a line using canvas by feeding the data to d3's line generator
+	$context.beginPath();
+	line(data);
+	$context.lineWidth = 1;
+	$context.strokeStyle = `rgba(28, 28, 28, ${opacity})`;
+	$context.stroke();
 }
 
-function updateHistogram(data, fam_num, time) {
-	// update histogram
-	updateHistData(data[fam_num].values);
+function addQuintileBackground() {
+	// shades the part of the plot that corresponds to each quintile with that quintile's color
+	// also labels each colored area with the quintile name to the left of the plot
+
+	quintileNames.forEach((d, i) => {
+		$context.fillStyle = colorScale(d);
+		$context.fillRect(margin.left, scaleY_line((i + 1) * 20), familyLines_width, height / 5)
+
+		$context.font = '18px Tiempos Text Web'
+		$context.fillStyle = '#000';
+		$context.textAlign = 'end';
+		$context.textBaseline = 'middle';
+		$context.fillText(d, margin.left - 10, scaleY_line(i * 20) - (height / 10));
+	});
+}
+
+function updateHistogram(data, time) {
+	// update histogram data
+	updateHistData(data);
 
 	// check if we need to update histogram's scaleX
 	updateHistScaleX();
 
-	$bars.data(histData)
-		.transition()
+	// update histogram bars and labels
+	$bar_group.data(histData);
+
+	$bars.transition()
 		.duration(time)
 		.attr('width', d => scaleX_hist(d.n));
-}
-// function animateCharts(data) {
-// 	// draw first line
-// 	$lines.selectAll('.line.family_0')
-// 		.data(data.filter((d, i) => i == 0))
-// 		.enter()
-// 		.append('path')
-// 		.attr('class', (d, i) => 'line family_' + i)
-// 		.attr('d', d => line(d.values))
-// 		.style('opacity', 1)
-// 		.transition()
-// 		.delay(ms_slow)  // once next line is drawn, reduce the opacity of this line
-// 		.style('opacity', 0.05)
-// 		.transition()
-// 		.delay(ms_slow * maxLines)
-// 		.duration(ms_slow)
-// 		.style('opacity', 0)
-// 		.remove();
 
-// 	let fam_num = 1;
-
-// 	// update histogram with first family's data
-// 	updateHistData(data[0].values);
-// 	$bars.data(histData)
-// 		.transition()
-// 		.duration(ms_slow)
-// 		.attr('width', d => scaleX_hist(d.n));
-
-
-// 	// animate chart
-// 	let t = d3.interval(function(elapsed) {
-// 		// transition lines
-// 		$lines.selectAll('.line.family_' + fam_num)
-// 			.data(data.filter((d, i) => i == fam_num))
-// 			.enter()
-// 			.append('path')
-// 			.attr('class', (d, i) => 'line family_' + fam_num)
-// 			.attr('d', d => line(d.values))
-// 			.style('opacity', 1)
-// 			.transition()
-// 			.delay(ms_slow)
-// 			.style('opacity', 0.05)
-// 			.transition()
-// 			.delay(ms_slow * maxLines)  // it takes 5 seconds (0.25 * 20) to add 20 new lines to the chart
-// 			.duration(ms_slow)
-// 			.style('opacity', 0)
-// 			.remove();
-
-// 		// update histogram
-// 		updateHistData(data[fam_num].values);
-
-// 		// check if we need to update histogram's scaleX
-// 		updateHistScaleX();
-
-// 		$bars.data(histData)
-// 			.transition()
-// 			.duration(ms_slow)
-// 			.attr('width', d => scaleX_hist(d.n));
-
-// 		fam_num++;
-
-// 		if (fam_num === 100) t.stop();
-// 	}, ms_slow);
-// }
-
-function addQuintileBackground(chart) {
-	// shades the part of the plot that corresponds to each quintile with that quintile's color
-	// also labels each colored area with the quintile name to the left of the plot
-
-	let $background = chart.append('g')
-		.selectAll('.quintileBlock')
-		.data(colorScale.domain())
-		.enter()
-		.append('g')
-		.attr('class', 'quintileBlock');
-
-	$background.append('rect')
-		.attr('class', 'quintileRect')
-		.attr('x', 0)
-		.attr('y', (d, i) => scaleY_line((i + 1) * 20))
-		.attr('width', familyLines_width)
-		.attr('height', height / 5)
-		.style('fill', d => colorScale(d));
-
-	// add "y axis"
-	$background.append('text')
-		.attr('class', 'quintileLabel')
-		.attr('x', -5)
-		.attr('y', (d, i) => scaleY_line(i * 20))
-		.attr('dy', '-1em')
-		.text(d => d);
+	$bar_labels.transition()
+		.duration(time)
+		.attr('x', d => scaleX_hist(d.n) + 5)
+		.text(d => d.n);
 }
 
 function updateHistScaleX() {
@@ -328,8 +310,8 @@ function updateHistScaleX() {
 	const scale_current_max = scaleX_hist.domain()[1];
 
 	if(dataMax > scale_current_max) {
-		scaleX_hist.domain([0, scaleX_hist_breakpoints[0]]);
-		scaleX_hist_breakpoints.shift();  // TODO: need to store these in a new array in case user hits the replay button (or make a copy of the original array and .shift on the copy)
+		scaleX_hist.domain([0, scaleX_hist_breakpoints_copy[0]]);
+		scaleX_hist_breakpoints_copy.shift();
 
 		$familyHist__vis.selectAll(".axis.axis--x")
 			.transition()
@@ -376,4 +358,82 @@ function objToArray(obj) {
 	});
 
 	return quintileArray;
+}
+
+function replay() {
+
+	// cancel current timer and clear canvas
+	tweenTimer.stop();
+	clearTimeout(timer);
+
+	$context.clearRect(0, 0, $canvas.attr('width'), $canvas.attr('height'));
+	addQuintileBackground();
+
+	// reset histogram to zero
+	scaleX_hist.domain([0, 20]);
+	scaleX_hist_breakpoints_copy = scaleX_hist_breakpoints.slice();
+
+	histData = [{quintile: 'Lower', n: 0},
+		{quintile: 'Lower Middle', n: 0},
+		{quintile: 'Middle', n: 0},
+		{quintile: 'Upper Middle', n: 0},
+		{quintile: 'Upper', n: 0}];
+
+	$familyHist__vis.selectAll(".axis.axis--x")
+		.transition()
+		.call(d3.axisBottom(scaleX_hist).ticks(4));
+
+	$bar_group.data(histData);
+
+	$bar_group.select('.bar')
+		.transition()
+		.duration(500)
+		.attr('width', d => scaleX_hist(d.n));
+
+	$bar_group.select('.label')
+		.transition()
+		.duration(500)
+		.attr('x', 5)
+		.text(d => d.n);
+
+	// restart animation
+	fam_num = 1;
+	let firstLineLength = dataByFamily[0].values.length;
+	drawFirstLine();
+	timer = setTimeout(animateLines, firstLineLength * ms_slow);
+}
+
+function showEnd(countsArray) {
+	// when user clicks the button to skip the animation, cancel the timer, clear canvas
+	// (but redraw background) and show the histogram with data from all families
+	tweenTimer.stop();
+	clearTimeout(timer);
+
+	$context.clearRect(0, 0, $canvas.attr('width'), $canvas.attr('height'));
+	addQuintileBackground();
+
+	scaleX_hist.domain([0, scaleX_hist_breakpoints[scaleX_hist_breakpoints.length - 1]]);
+
+	$familyHist__vis.selectAll(".axis.axis--x")
+		.transition()
+		.call(d3.axisBottom(scaleX_hist).ticks(4));
+
+	$bar_group.data(countsArray);
+
+	$bar_group.select('.bar')
+		.transition()
+		.duration(500)
+		.attr('width', d => scaleX_hist(d.n));
+
+	$bar_group.select('.label')
+		.transition()
+		.duration(500)
+		.attr('x', d => scaleX_hist(d.n) + 5)
+		.text(d => d.n);
+}
+
+function snapToNearestPoint(value) {
+	// rounds pixel value to nearest half point
+	// needed to improve sharpness of lines in canvas
+	return Math.round(value) + 0.5;
 }
