@@ -11,7 +11,7 @@ const $skipToEnd__btn = $section.select('.skipToEnd');
 
 // dimensions
 const DPR = window.devicePixelRatio ? Math.min(window.devicePixelRatio, 2) : 1;
-const margin = {top: 20, bottom: 40, left: 140, right: 0};
+const margin = {top: 20, bottom: 40, left: 47, right: 0};
 const margin_hist = {left: 10, right: 20};
 let familyLines_width = ($canvas__container.node().getBoundingClientRect().width - margin.left - margin.right) * DPR;
 let familyHist_width = ($familyHist__svg.node().getBoundingClientRect().width - margin_hist.left - margin_hist.right) * DPR;
@@ -304,13 +304,11 @@ function addQuintileBackground() {
 		$gradient.addColorStop(1, colorScale(d));
 		$context.fillStyle = $gradient;
 		$context.fillRect(margin.left, scaleY_line((i + 1) * 20), familyLines_width, height / 5)
-
-		$context.font = '18px Tiempos Text Web'
-		$context.fillStyle = '#000';
-		$context.textAlign = 'end';
-		$context.textBaseline = 'middle';
-		$context.fillText(d, margin.left - 10, scaleY_line(i * 20) - (height / 10));
 	});
+
+	let axisImage = new Image();
+	axisImage.src = '../assets/images/familyLines_yAxis.png';
+	axisImage.onload = function() { $context.drawImage(axisImage, 0, margin.top, margin.left, height); }
 }
 
 function updateHistogram(data, time) {
