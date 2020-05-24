@@ -20,9 +20,9 @@ let height = ($family__container.node().offsetHeight - margin.top - margin.botto
 // add in canvas element
 const $canvas = $canvas__container.append('canvas')
 	.attr('width', familyLines_width + margin.left + margin.right)
-	.attr('height', height)
+	.attr('height', height + margin.top + margin.bottom)
 	.style('width', (familyLines_width + margin.left + margin.right)/DPR + "px")
-	.style('height', height/DPR + "px");
+	.style('height', (height + margin.top + margin.bottom)/DPR + "px");
 
 let $context = $canvas.node().getContext('2d');
 
@@ -47,7 +47,7 @@ const scaleX_line = d3.scaleLinear()
 
 const scaleY_line = d3.scaleLinear()
 	.domain([0, 100])
-	.range([height, 0]);
+	.range([height + margin.top, margin.top]);
 
 const scaleX_hist = d3.scaleLinear()
 	.domain([0, 20])
@@ -62,7 +62,7 @@ const scaleY_hist = d3.scaleBand()
 
 const colorScale = d3.scaleOrdinal()
 	.domain(quintileNames)
-	.range(["#f9cdce", "#fbdddd", "#fcf5db", "#e1f5ea", "#d4f1df"]);
+	.range(["#FFFFC5", "#A5D5D8", "#77A5C8", "#4771B2", "#00429D"]);
 
 const line = d3.line()
     .x(d => snapToNearestPoint(scaleX_line(d.year)))
@@ -208,7 +208,7 @@ function drawFirstLine() {
 				}
 
 				$context.lineWidth = 1;
-				$context.strokeStyle = 'rgba(28, 28, 28, 1)';
+				$context.strokeStyle = 'rgba(0, 0, 0, 1)';
 				$context.stroke();
 
 				if(t === 1) {
@@ -225,8 +225,8 @@ function drawFirstLine() {
 }
 
 function animateLines() {
-	if(fam_num < totalLines) {
-	// if(fam_num < 100) {
+	// if(fam_num < totalLines) {
+	if(fam_num < 100) {
 		if(fam_num < maxLines) {
 			animate(dataByFamily, fam_num, ms_slow);
 			timer = setTimeout(animateLines, ms_slow);
@@ -264,7 +264,7 @@ function drawLine(data, opacity) {
 	$context.beginPath();
 	line(data);
 	$context.lineWidth = 1;
-	$context.strokeStyle = `rgba(28, 28, 28, ${opacity})`;
+	$context.strokeStyle = `rgba(0, 0, 0, ${opacity})`;
 	$context.stroke();
 }
 
@@ -272,8 +272,37 @@ function addQuintileBackground() {
 	// shades the part of the plot that corresponds to each quintile with that quintile's color
 	// also labels each colored area with the quintile name to the left of the plot
 
+	$context.font = '16px National 2';
+	$context.fillStyle = '#000';
+	$context.textAlign = 'start';
+	$context.textBaseline = 'bottom';
+	$context.fillText('higher income', margin.left, margin.top);
+
+	$context.fillStyle = '#828282';
+	$context.fillText('income in first year', margin.left, margin.top + height + margin.bottom);
+
+	$context.textAlign = 'end';
+	$context.fillText('income in last year', margin.left + familyLines_width, margin.top + height + margin.bottom);
+
+	$context.beginPath();
+	$context.moveTo(snapToNearestPoint(margin.left), margin.top + height);
+	$context.lineTo(snapToNearestPoint(margin.left), margin.top + height + 19);
+	$context.lineWidth = 1;
+	$context.strokeStyle = '#828282';
+	$context.stroke();
+
+	$context.beginPath();
+	$context.moveTo(snapToNearestPoint(margin.left + familyLines_width - 2), margin.top + height);
+	$context.lineTo(snapToNearestPoint(margin.left + familyLines_width - 2), margin.top + height + 19);
+	$context.lineWidth = 1;
+	$context.strokeStyle = '#828282';
+	$context.stroke();
+
 	quintileNames.forEach((d, i) => {
-		$context.fillStyle = colorScale(d);
+		const $gradient = $context.createLinearGradient(margin.left, 0, $canvas.attr('width'), 0);
+		$gradient.addColorStop(0, "white");
+		$gradient.addColorStop(1, colorScale(d));
+		$context.fillStyle = $gradient;
 		$context.fillRect(margin.left, scaleY_line((i + 1) * 20), familyLines_width, height / 5)
 
 		$context.font = '18px Tiempos Text Web'
