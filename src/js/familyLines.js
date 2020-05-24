@@ -11,8 +11,8 @@ const $skipToEnd__btn = $section.select('.skipToEnd');
 
 // dimensions
 const DPR = window.devicePixelRatio ? Math.min(window.devicePixelRatio, 2) : 1;
-const margin = {top: 20, bottom: 40, left: 47, right: 0};
-const margin_hist = {left: 10, right: 20};
+const margin = {top: 40, bottom: 40, left: 47, right: 0};
+const margin_hist = {left: 10, right: 52};
 let familyLines_width = ($canvas__container.node().getBoundingClientRect().width - margin.left - margin.right) * DPR;
 let familyHist_width = ($familyHist__svg.node().getBoundingClientRect().width - margin_hist.left - margin_hist.right) * DPR;
 let height = ($family__container.node().offsetHeight - margin.top - margin.bottom) * DPR;
@@ -70,6 +70,7 @@ const line = d3.line()
     .curve(d3.curveStepAfter)
     .context($context);
 
+const commaFmt = d3.format(",.0f");
 
 // initial data for the histogram
 let histData = [{quintile: 'Lower', n: 0},
@@ -104,7 +105,17 @@ let $bar_labels = $bar_group.append('text')
 	.attr('x', 5)
 	.attr('y', d => scaleY_hist(d.quintile) + scaleY_hist.bandwidth()/2)
 	.attr('dy', '.5em')
-	.text(d => d.n);
+	.text(d => commaFmt(d.n));
+
+$familyHist__svg.append('text')
+	.attr('x', margin_hist.left)
+	.attr('y', '1em')
+	.text('Years in Each Quintile (across x families)');
+
+$familyHist__svg.append('text')
+	.attr('x', margin_hist.left)
+	.attr('y', '2.3em')
+	.text('(across x families)');
 
 loadData('line_chart_data.csv').then(result => {
 
@@ -135,7 +146,7 @@ loadData('line_chart_data.csv').then(result => {
 	$familyHist__vis.append('g')
 		.attr('class', 'axis axis--x')
 		.attr('transform', 'translate(0,' + height + ')')
-		.call(d3.axisBottom(scaleX_hist).ticks(4));
+		.call(d3.axisBottom(scaleX_hist).tickValues([0, 20]));
 
 	let firstLineLength = dataByFamily[0].values.length;
 
@@ -225,8 +236,8 @@ function drawFirstLine() {
 }
 
 function animateLines() {
-	// if(fam_num < totalLines) {
-	if(fam_num < 100) {
+	if(fam_num < totalLines) {
+	// if(fam_num < 100) {
 		if(fam_num < maxLines) {
 			animate(dataByFamily, fam_num, ms_slow);
 			timer = setTimeout(animateLines, ms_slow);
@@ -328,7 +339,7 @@ function updateHistogram(data, time) {
 	$bar_labels.transition()
 		.duration(time)
 		.attr('x', d => scaleX_hist(d.n) + 5)
-		.text(d => d.n);
+		.text(d => commaFmt(d.n));
 }
 
 function updateHistScaleX() {
@@ -342,7 +353,7 @@ function updateHistScaleX() {
 
 		$familyHist__vis.selectAll(".axis.axis--x")
 			.transition()
-			.call(d3.axisBottom(scaleX_hist).ticks(4));
+			.call(d3.axisBottom(scaleX_hist).tickValues(scaleX_hist.domain()));
 	}
 }
 
@@ -408,7 +419,7 @@ function replay() {
 
 	$familyHist__vis.selectAll(".axis.axis--x")
 		.transition()
-		.call(d3.axisBottom(scaleX_hist).ticks(4));
+		.call(d3.axisBottom(scaleX_hist).tickValues([0, 20]));
 
 	$bar_group.data(histData);
 
@@ -421,7 +432,7 @@ function replay() {
 		.transition()
 		.duration(500)
 		.attr('x', 5)
-		.text(d => d.n);
+		.text(d => commaFmt(d.n));
 
 	// restart animation
 	fam_num = 1;
@@ -443,7 +454,7 @@ function showEnd(countsArray) {
 
 	$familyHist__vis.selectAll(".axis.axis--x")
 		.transition()
-		.call(d3.axisBottom(scaleX_hist).ticks(4));
+		.call(d3.axisBottom(scaleX_hist).tickValues(scaleX_hist.domain()));
 
 	$bar_group.data(countsArray);
 
@@ -456,11 +467,36 @@ function showEnd(countsArray) {
 		.transition()
 		.duration(500)
 		.attr('x', d => scaleX_hist(d.n) + 5)
-		.text(d => d.n);
+		.text(d => commaFmt(d.n));
 }
 
 function snapToNearestPoint(value) {
 	// rounds pixel value to nearest half point
 	// needed to improve sharpness of lines in canvas
 	return Math.round(value) + 0.5;
+}
+
+
+function wrap(text, width) {
+  text.each(function() {
+    var text = d3.select(this),
+        words = text.text().split(/\s+/).reverse(),
+        word,
+        line = [],
+        lineNumber = 0,
+        lineHeight = 1.1, // ems
+        y = text.attr("y"),
+        dy = 0.3,
+        tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+    while (word = words.pop()) {
+      line.push(word);
+      tspan.text(line.join(" "));
+      if (tspan.node().getComputedTextLength() > width) {
+        line.pop();
+        tspan.text(line.join(" "));
+        line = [word];
+        tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+      }
+    }
+  });
 }
