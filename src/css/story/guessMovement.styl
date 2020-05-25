@@ -25,12 +25,15 @@
 		pointer-events none
 		cursor auto
 		color #d2d2d2
+	.noDisplay
+		visibility hidden
 	.guess_svg
+		text
+			font-family $sans
 		rect.selection
 			pointer-events none // prevents bars from being moved
 		.axis
 			text
-				font-family $sans
 				font-size 14px
 				color #828282
 			.axisTitle
@@ -44,8 +47,9 @@
 				display none
 			line
 				stroke rgba(224, 224, 224, 0.5)
-	.answer__figure.noDisplay
-		display none
-	.answerBarLabel
-		font-size 11px
-		text-anchor middle
+		.answerBar
+			fill rgba(0, 0, 0, 0.5)
+		.answerBarLabel
+			font-size 14px
+			color #828282
+			text-anchor middle

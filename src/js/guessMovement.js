@@ -172,15 +172,14 @@ function updateInterpretText() {
 $submitBtn.on('click', showAnswer);
 
 function showAnswer() {
-	$answer__container.classed('noDisplay', false);
+	$answer__vis.classed('noDisplay', false);
 	// once we have actual text, also scroll the user down so that they can see the answer chart?
 }
 
 /// draw answer graph - TODO finesse this so that the bars transition from zero to the data value (i.e., "grow") after the user clicks the submit button?
-let $answer__vis = $answer__svg.attr('width', width + margin.left + margin.right)
-	.attr('height', height + margin.top + margin.bottom)
-	.append('g')
-	.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+let $answer__vis = $guess__svg.append('g')
+	.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+	.attr('class', 'answer noDisplay');
 
 let $answer__bars = $answer__vis.selectAll('.answerBar')
 	.data(answerData)
@@ -199,17 +198,3 @@ $answer__bars.append('text')
 	.attr('x', function(d) { return scaleX(d.levels) + scaleX.bandwidth()/2; })
 	.attr('y', function(d) { return scaleY(d.share) - 10; })
 	.text(function(d) { return d.share + '%'; });
-
-$answer__vis.append('g')
-	.attr('class', 'axis axis--x')
-	.attr('transform', 'translate(0,' + height + ')')
-	.call(d3.axisBottom(scaleX))
-	.append('text')
-	.attr('x', width / 2)
-	.attr('y', margin.bottom - 5)
-	.text('Levels Moved')
-	.style('fill', '#000');
-
-$answer__vis.append('g')
-	.attr('class', 'axis axis--y')
-	.call(d3.axisLeft(scaleY).ticks(5).tickFormat(d => d + '%'));
