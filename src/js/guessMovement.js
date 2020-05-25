@@ -147,17 +147,17 @@ function resizeBar() {
 function updateWarningMsg() {
 	const sum = d3.sum(guessData, d => d.share);
 	const diff = 100 - Math.round(sum);
-	let msg = `Keep going! You still have <strong>${diff}%</strong> of families unaccounted for`;
-
-	$warningMsg.html(msg);
 
 	// if diff < 1, activate the "Submit" button and hide the warning message
 	if(Math.abs(diff) < 1) {
-		$warningMsg.style('visibility', 'hidden');
+		let msg = "You must decrease a bar to increase another"
+		$warningMsg.html(msg);
 		$submitBtn.classed('inactive', false)
 		$instruction2.style('visibility', 'visible');
 	}
 	else {
+		let msg = `Keep going! You still have <strong>${diff}%</strong> of families unaccounted for`;
+		$warningMsg.html(msg);
 		$warningMsg.style('visibility', 'visible');
 		$submitBtn.classed('inactive', true);
 		$instruction2.style('visibility', 'hidden');

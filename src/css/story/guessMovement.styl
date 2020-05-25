@@ -2,10 +2,6 @@
 	figure
 		width 100%
 		// max-height 342px
-	rect.selection
-		pointer-events none // prevents bars from being moved
-	.instruction2
-		visibility hidden
 	.warningMsg
 		visibility hidden
 		max-width 272px
@@ -30,6 +26,8 @@
 		cursor auto
 		color #d2d2d2
 	.guess_svg
+		rect.selection
+			pointer-events none // prevents bars from being moved
 		.axis
 			text
 				font-family $sans
