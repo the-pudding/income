@@ -125,9 +125,9 @@ function resizeBar() {
 function updateWarningMsg() {
 	const sum = d3.sum(guessData, d => d.share);
 	const diff = 100 - Math.round(sum);
-	let msg = diff + "% of families unaccounted for";
+	let msg = `Keep going! You still have <strong>${diff}%</strong> of families unaccounted for`;
 
-	$warningMsg.text(msg);
+	$warningMsg.html(msg);
 	$warningMsg.style('visibility', 'visible');
 
 	// if diff < 1, activate the "Submit" button
