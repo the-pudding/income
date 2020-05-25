@@ -44,6 +44,24 @@ let $guess__vis = $guess__svg.attr('width', width + margin.left + margin.right)
 	.append('g')
 	.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
+$guess__vis.append('g')
+	.attr('class', 'axis axis--x')
+	.attr('transform', 'translate(0,' + height + ')')
+	.call(d3.axisBottom(scaleX))
+	.append('text')
+	.attr('class', 'axisTitle')
+	.attr('x', width / 2)
+	.attr('y', margin.bottom - 2)
+	.text('Furthest Quintiles Moved')
+	.style('fill', '#000');
+
+$guess__vis.append('g')
+	.attr('class', 'axis axis--y')
+	.call(d3.axisLeft(scaleY).ticks(5).tickFormat(d => d === 100 ? d + '% of families' : d + '%').tickSize(-width))
+	.selectAll('text')
+		.attr('x', -margin.left)
+		.style('text-anchor', 'start');
+
 let $brush = d3.brushY()
 	.extent(function(d, i) {
 		return [[scaleX(d.levels), 0],[scaleX(d.levels) + scaleX.bandwidth(), height]];
@@ -63,6 +81,10 @@ let $bars = $guess__vis.selectAll('.brush')
 		.datum({type: 'selection'})
 		.on('mousedown touchstart', resizeBar)
 	);
+
+d3.selectAll(".selection")
+	.style("fill", "#00429D")
+	.style("fill-opacity", "0.5");
 
 // get rid of handle at the bottom of the bars
 $guess__vis.selectAll('.handle--s').remove();
@@ -146,24 +168,6 @@ function updateInterpretText() {
 	// need some scenarios and ways to calculate which one applies based on the current state of the graph
 	$interpretText.text('According to you, roughly equal numbers of families move a lot as do those that move a little.');
 }
-
-$guess__vis.append('g')
-	.attr('class', 'axis axis--x')
-	.attr('transform', 'translate(0,' + height + ')')
-	.call(d3.axisBottom(scaleX))
-	.append('text')
-	.attr('class', 'axisTitle')
-	.attr('x', width / 2)
-	.attr('y', margin.bottom - 2)
-	.text('Furthest Quintiles Moved')
-	.style('fill', '#000');
-
-$guess__vis.append('g')
-	.attr('class', 'axis axis--y')
-	.call(d3.axisLeft(scaleY).ticks(5).tickFormat(d => d === 100 ? d + '% of families' : d + '%').tickSize(-width))
-	.selectAll('text')
-		.attr('x', -margin.left)
-		.style('text-anchor', 'start');
 
 $submitBtn.on('click', showAnswer);
 
