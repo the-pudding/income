@@ -22,7 +22,7 @@ let guessData = [{levels: 0, share: 0},
 				 {levels: 4, share: 0}];
 
 // dimensions
-const margin = {top: 20, bottom: 40, left: 38, right: 0};
+const margin = {top: 20, bottom: 50, left: 46, right: 0};
 let width = $guess__container.node().offsetWidth - margin.left - margin.right;
 let height = $guess__container.node().offsetHeight - margin.top - margin.bottom;
 
@@ -151,14 +151,18 @@ $guess__vis.append('g')
 	.attr('transform', 'translate(0,' + height + ')')
 	.call(d3.axisBottom(scaleX))
 	.append('text')
+	.attr('class', 'axisTitle')
 	.attr('x', width / 2)
-	.attr('y', margin.bottom - 5)
-	.text('Levels Moved')
+	.attr('y', margin.bottom - 2)
+	.text('Furthest Quintiles Moved')
 	.style('fill', '#000');
 
 $guess__vis.append('g')
 	.attr('class', 'axis axis--y')
-	.call(d3.axisLeft(scaleY).ticks(5).tickFormat(d => d + '%'));
+	.call(d3.axisLeft(scaleY).ticks(5).tickFormat(d => d === 100 ? d + '% of families' : d + '%').tickSize(-width))
+	.selectAll('text')
+		.attr('x', -margin.left)
+		.style('text-anchor', 'start');
 
 $submitBtn.on('click', showAnswer);
 
