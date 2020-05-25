@@ -128,14 +128,15 @@ function updateWarningMsg() {
 	let msg = `Keep going! You still have <strong>${diff}%</strong> of families unaccounted for`;
 
 	$warningMsg.html(msg);
-	$warningMsg.style('visibility', 'visible');
 
-	// if diff < 1, activate the "Submit" button
+	// if diff < 1, activate the "Submit" button and hide the warning message
 	if(Math.abs(diff) < 1) {
+		$warningMsg.style('visibility', 'hidden');
 		$submitBtn.classed('inactive', false)
 		$instruction2.style('visibility', 'visible');
 	}
 	else {
+		$warningMsg.style('visibility', 'visible');
 		$submitBtn.classed('inactive', true);
 		$instruction2.style('visibility', 'hidden');
 	}
