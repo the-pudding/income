@@ -173,10 +173,29 @@ $submitBtn.on('click', showAnswer);
 
 function showAnswer() {
 	$answer__vis.classed('noDisplay', false);
-	// once we have actual text, also scroll the user down so that they can see the answer chart?
+
+	// add overlay so user can't continue to drag bars
+	$guess__svg.append('rect')
+		.attr('x', margin.left)
+		.attr('y', margin.top)
+		.attr('width', width)
+		.attr('height', height)
+		.style('fill', 'rgba(255, 255, 255, 0');
+
+	// make submit button inactive again
+	$submitBtn.classed('inactive', true);
+
+	// animate bars in from zero and show labels after all bars finish appearing
+	d3.selectAll('.answerBar')
+		.transition(1000)
+		.delay((d, i) => i * 500)
+		.attr('y', d => scaleY(d.share))
+		.attr('height', d => height - scaleY(d.share))
+		.end()
+		.then(() => d3.selectAll('.answerBarLabel').style('opacity', 1));
 }
 
-/// draw answer graph - TODO finesse this so that the bars transition from zero to the data value (i.e., "grow") after the user clicks the submit button?
+// draw answer graph - TODO finesse this so that the bars transition from zero to the data value (i.e., "grow") after the user clicks the submit button?
 let $answer__vis = $guess__svg.append('g')
 	.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
 	.attr('class', 'answer noDisplay');
@@ -188,13 +207,14 @@ let $answer__bars = $answer__vis.selectAll('.answerBar')
 
 $answer__bars.append('rect')
 	.attr('class', 'answerBar')
-	.attr('x', function(d) { return scaleX(d.levels); })
-	.attr('y', function(d) { return scaleY(d.share); })
+	.attr('x', d => scaleX(d.levels))
+	.attr('y', d => height)
 	.attr('width', scaleX.bandwidth())
-	.attr('height', function(d) { return height - scaleY(d.share); });
+	.attr('height', 0);
 
 $answer__bars.append('text')
 	.attr('class', 'answerBarLabel')
-	.attr('x', function(d) { return scaleX(d.levels) + scaleX.bandwidth()/2; })
-	.attr('y', function(d) { return scaleY(d.share) - 10; })
-	.text(function(d) { return d.share + '%'; });
+	.attr('x', d => scaleX(d.levels) + scaleX.bandwidth()/2)
+	.attr('y', d => scaleY(d.share) - 10)
+	.text(d => d.share + '%')
+	.style('opacity', 0);
