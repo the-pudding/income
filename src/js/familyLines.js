@@ -236,8 +236,8 @@ function drawFirstLine() {
 }
 
 function animateLines() {
-	// if(fam_num < totalLines) {
-	if(fam_num < 100) {
+	if(fam_num < totalLines) {
+	// if(fam_num < 100) {
 		if(fam_num < maxLines) {
 			animate(dataByFamily, fam_num, ms_slow);
 			timer = setTimeout(animateLines, ms_slow);
