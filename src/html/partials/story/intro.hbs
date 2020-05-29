@@ -1,4 +1,4 @@
-<div class='intro'>
+<section class='intro'>
 	<h1 class='intro__hed'>{{doc.title}}</h1>
 	<p class='intro__dek'>{{meta.description}}</p>
 	<p class='intro__byline'>By
@@ -8,6 +8,8 @@
 	</p>
 	<time class='intro__time'>Month 2019</time>
 	{{#each doc.intro}}
-		<p>{{value}}</p>
+	<p>{{{value}}}</p>
 	{{/each}}
-</div>
+
+
+</section>

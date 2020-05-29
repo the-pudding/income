@@ -1,0 +1,16 @@
+<section class='calc'>
+    <h3 class='section-hed'>{{{doc.calcHed}}}</h3>
+
+    {{#each doc.calc}}
+    <p class='prose'>{{{value}}}</p>
+    {{/each}}
+
+    {{#each doc.steps}}
+    <div class='step-group'>
+        <h4 class='step-num'>Step {{step}}</h4>
+        <p class='step-desc'>{{{text}}}</p>
+        <img src='assets/images/step_{{step}}.png'>
+    </div>
+
+    {{/each}}
+</section>
