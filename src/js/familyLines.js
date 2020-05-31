@@ -11,7 +11,7 @@ const $skipToEnd__btn = $section.select('.skipToEnd');
 
 // dimensions
 const DPR = window.devicePixelRatio ? Math.min(window.devicePixelRatio, 2) : 1;
-const margin = { top: 40, bottom: 24, left: 104, right: 0 };
+const margin = { top: 40, bottom: 24, left: 114, right: 0 };
 const margin_hist = { left: 10, right: 55 };
 const familyLines_width =
   ($canvas__container.node().getBoundingClientRect().width -
@@ -24,16 +24,28 @@ const familyHist_width =
     margin_hist.right) *
   DPR;
 const height = (($family__container.node().getBoundingClientRect().width * 0.81) - margin.top - margin.bottom) * DPR;
-console.log(height);
-// add in canvas element
+
+// add in 2 canvas elements - one for the background and one for the line
+const $canvas_bg = $canvas__container
+  .append('canvas')
+  .attr('class', 'background')
+  .attr('width', familyLines_width + margin.left + margin.right)
+  .attr('height', height + margin.top + margin.bottom)
+  .style('width', `${(familyLines_width + margin.left + margin.right) / DPR}px`)
+  .style('height', `${(height + margin.top + margin.bottom) / DPR}px`);
+
+const $context_bg = $canvas_bg.node().getContext('2d');
+
 const $canvas = $canvas__container
   .append('canvas')
+  .attr('class', 'line')
   .attr('width', familyLines_width + margin.left + margin.right)
   .attr('height', height + margin.top + margin.bottom)
   .style('width', `${(familyLines_width + margin.left + margin.right) / DPR}px`)
   .style('height', `${(height + margin.top + margin.bottom) / DPR}px`);
 
 const $context = $canvas.node().getContext('2d');
+
 
 // parameters for line chart animation
 let timer;
@@ -295,7 +307,7 @@ function animate(data, fam_num, ms) {
   // line entirely when ten more lines are drawn afterwards
   $context.clearRect(0, 0, $canvas.attr('width'), $canvas.attr('height'));
 
-  addQuintileBackground();
+  // addQuintileBackground();
 
   // for the first few lines, first fade out the nine previously drawn lines
   if (fam_num < maxLines) {
@@ -322,38 +334,38 @@ function addQuintileBackground() {
   // shades the part of the plot that corresponds to each quintile with that quintile's color
 
   // y-axis labels
-  $context.font = '16px National 2 Narrow Web';
-  $context.fillStyle = '#828282';
-  $context.textAlign = 'end';
-  $context.textBaseline = 'bottom';
-  $context.fillText('Higher', 42, margin.top + 20);
-  $context.fillText('income', 42, margin.top + 34);
-  $context.fillText('Lower', 42, margin.top + height - 24);
-  $context.fillText('income', 42, margin.top + height - 10);
+  $context_bg.font = '16px National 2 Narrow Web';
+  $context_bg.fillStyle = '#828282';
+  $context_bg.textAlign = 'end';
+  $context_bg.textBaseline = 'bottom';
+  $context_bg.fillText('Higher', 42, margin.top + 20);
+  $context_bg.fillText('income', 42, margin.top + 34);
+  $context_bg.fillText('Lower', 42, margin.top + height - 24);
+  $context_bg.fillText('income', 42, margin.top + height - 10);
 
   // draw arrows
-  $context.beginPath();
-  $context.moveTo(37, margin.top);
-  $context.lineTo(42, margin.top + 5);
-  $context.lineTo(32, margin.top + 5);
-  $context.fill();
+  $context_bg.beginPath();
+  $context_bg.moveTo(37, margin.top);
+  $context_bg.lineTo(42, margin.top + 5);
+  $context_bg.lineTo(32, margin.top + 5);
+  $context_bg.fill();
 
-  $context.beginPath();
-  $context.moveTo(37, margin.top + height);
-  $context.lineTo(42, margin.top + height - 5);
-  $context.lineTo(32, margin.top + height - 5);
-  $context.fill();
+  $context_bg.beginPath();
+  $context_bg.moveTo(37, margin.top + height);
+  $context_bg.lineTo(42, margin.top + height - 5);
+  $context_bg.lineTo(32, margin.top + height - 5);
+  $context_bg.fill();
 
   // x-axis labels
-  $context.textAlign = 'start';
-  $context.fillText(
+  $context_bg.textAlign = 'start';
+  $context_bg.fillText(
     'Income in first year',
     margin.left,
     margin.top + height + margin.bottom - 2
   );
 
-  $context.textAlign = 'end';
-  $context.fillText(
+  $context_bg.textAlign = 'end';
+  $context_bg.fillText(
     'Income in last year',
     margin.left + familyLines_width,
     margin.top + height + margin.bottom - 2
@@ -380,16 +392,16 @@ function addQuintileBackground() {
   // $context.stroke();
 
   quintileNames.forEach((d, i) => {
-    const $gradient = $context.createLinearGradient(
+    const $gradient = $context_bg.createLinearGradient(
       margin.left,
       0,
-      $canvas.attr('width'),
+      $canvas_bg.attr('width'),
       0
     );
     $gradient.addColorStop(0, 'white');
     $gradient.addColorStop(1, colorScale(d));
-    $context.fillStyle = $gradient;
-    $context.fillRect(
+    $context_bg.fillStyle = $gradient;
+    $context_bg.fillRect(
       margin.left,
       scaleY_line((i + 1) * 20),
       familyLines_width,
@@ -400,7 +412,7 @@ function addQuintileBackground() {
   const axisImage = new Image();
   axisImage.src = '../assets/images/familyLines_yAxis.png';
   axisImage.onload = function() {
-    $context.drawImage(axisImage, 50, margin.top, margin.left - 50, height);
+    $context_bg.drawImage(axisImage, 50, margin.top, (margin.left - 10) - 50, height);
   };
 }
 
@@ -489,7 +501,7 @@ function replay() {
   clearTimeout(timer);
 
   $context.clearRect(0, 0, $canvas.attr('width'), $canvas.attr('height'));
-  addQuintileBackground();
+  // addQuintileBackground();
 
   // reset histogram to zero
   scaleX_hist.domain([0, 20]);
@@ -537,7 +549,7 @@ function showEnd(countsArray) {
   clearTimeout(timer);
 
   $context.clearRect(0, 0, $canvas.attr('width'), $canvas.attr('height'));
-  addQuintileBackground();
+  // addQuintileBackground();
 
   scaleX_hist.domain([
     0,
