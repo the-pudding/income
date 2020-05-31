@@ -31,7 +31,7 @@ const scaleX = d3.scaleBand()
 	.domain([0, 1, 2, 3, 4])
 	.range([0, width])
 	.paddingInner(0.2)
-	.paddingOuter(0.3);
+	.paddingOuter(0.6);
 
 const scaleY = d3.scaleLinear()
 	.domain([0, 100])
@@ -57,9 +57,11 @@ $guess__vis.append('g')
 
 $guess__vis.append('g')
 	.attr('class', 'axis axis--y')
-	.call(d3.axisLeft(scaleY).ticks(5).tickFormat(d => d === 100 ? d + '% of families' : d + '%').tickSize(-width))
+	.attr('transform', 'translate(-' + margin.left + ', 0)')
+	.call(d3.axisRight(scaleY).ticks(5).tickFormat(d => d === 100 ? d + '% of families' : d + '%').tickSize(width + margin.left))
 	.selectAll('text')
-		.attr('x', -margin.left)
+		.attr('x', 0)
+		.attr('dy', 14)
 		.style('text-anchor', 'start');
 
 let $brush = d3.brushY()
@@ -83,8 +85,8 @@ let $bars = $guess__vis.selectAll('.brush')
 	);
 
 d3.selectAll(".selection")
-	.style("fill", "#00429D")
-	.style("fill-opacity", "0.5");
+	.style("fill", "#124653")
+	.style("fill-opacity", "0.8");
 
 // get rid of handle at the bottom of the bars
 $guess__vis.selectAll('.handle--s').remove();
@@ -152,14 +154,14 @@ function updateWarningMsg() {
 	if(Math.abs(diff) < 1) {
 		let msg = "You must decrease a bar to increase another"
 		$warningMsg.html(msg);
-		$submitBtn.classed('inactive', false)
+		$submitBtn.attr('aria-disabled', false)
 		$instruction2.style('visibility', 'visible');
 	}
 	else {
-		let msg = `Keep going! You still have <strong>${diff}%</strong> of families unaccounted for`;
+		let msg = `Keep going! <strong>${diff}%</strong> of families are still unaccounted`;
 		$warningMsg.html(msg);
 		$warningMsg.style('visibility', 'visible');
-		$submitBtn.classed('inactive', true);
+		$submitBtn.attr('aria-disabled', true);
 		$instruction2.style('visibility', 'hidden');
 	}
 }
@@ -183,7 +185,7 @@ function showAnswer() {
 		.style('fill', 'rgba(255, 255, 255, 0');
 
 	// make submit button inactive again
-	$submitBtn.classed('inactive', true);
+	$submitBtn.attr('aria-disabled', true);
 
 	// animate bars in from zero and show labels after all bars finish appearing
 	d3.selectAll('.answerBar')

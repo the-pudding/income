@@ -1,14 +1,18 @@
 <section class='guessMovement'>
-	<h3 class='section-hed'>{{{doc.movingHed}}}</h3>
+	<h2 class='section-hed'>{{{doc.movingHed}}}</h2>
 	{{#each doc.moving}}
 	<p class='prose'>{{{value}}}</p>
 	{{/each}}
+	<img src='assets/images/moving_quintiles.png'>
 	<figure class='guess__figure'>
-		<h4>{{{doc.movingQ}}}</h4>
-		<p class='instruction'>{{{doc.movingSetup}}}</p>
+		<h3>{{{doc.movingQ}}}</h3>
+		<div class='instruction_div'>
+			<img src='assets/images/mdi_touch_app.png'>
+			<p class='instruction'>{{{doc.movingSetup}}}</p>
+		</div>
 		<p class='warningMsg'>Keep going! You still have 100% of families unaccounted for</p>
 		<svg class='guess_svg'></svg>
 		<p class='interpretText'></p>
 	</figure>
-	<button class='submitBtn inactive'>Looks good, submit it</button>
+	<button class='submitBtn' aria-disabled="true">Looks good, submit it</button>
 </section>
