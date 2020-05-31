@@ -22,3 +22,19 @@ body
 			font-size 1.5rem
 			max-width 635px
 			margin 2% auto
+		button
+			text-transform uppercase
+			padding 1.2rem 1.5rem
+			font-family $sans
+			font-weight 700
+			display block
+			margin 0 auto
+			background-color #008577
+			color #fff
+			border-radius 3.75rem
+		button:hover
+			background-color #007367
+		button[aria-disabled=true]
+			pointer-events none
+			cursor auto
+			opacity 0.5

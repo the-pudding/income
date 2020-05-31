@@ -11,8 +11,8 @@ const $skipToEnd__btn = $section.select('.skipToEnd');
 
 // dimensions
 const DPR = window.devicePixelRatio ? Math.min(window.devicePixelRatio, 2) : 1;
-const margin = { top: 40, bottom: 40, left: 47, right: 0 };
-const margin_hist = { left: 10, right: 52 };
+const margin = { top: 40, bottom: 24, left: 104, right: 0 };
+const margin_hist = { left: 10, right: 55 };
 const familyLines_width =
   ($canvas__container.node().getBoundingClientRect().width -
     margin.left -
@@ -23,9 +23,8 @@ const familyHist_width =
     margin_hist.left -
     margin_hist.right) *
   DPR;
-const height =
-  ($family__container.node().offsetHeight - margin.top - margin.bottom) * DPR;
-
+const height = (($family__container.node().getBoundingClientRect().width * 0.81) - margin.top - margin.bottom) * DPR;
+console.log(height);
 // add in canvas element
 const $canvas = $canvas__container
   .append('canvas')
@@ -92,7 +91,7 @@ const scaleY_hist = d3
 const colorScale = d3
   .scaleOrdinal()
   .domain(quintileNames)
-  .range(['#FFFFC5', '#A5D5D8', '#77A5C8', '#4771B2', '#00429D']);
+  .range(['#FFBFBF', '#FF8850', '#FEE074', '#00A08F', '#124653']);
 
 const line = d3
   .line()
@@ -147,7 +146,7 @@ $familyHist__svg
   .append('text')
   .attr('x', margin_hist.left)
   .attr('y', '1em')
-  .text('Years in Each Quintile (across x families)');
+  .text('Years in Each Quintile');
 
 $familyHist__svg
   .append('text')
@@ -182,11 +181,11 @@ loadData('line_chart_data.csv')
 
     addQuintileBackground();
 
-    $familyHist__vis
-      .append('g')
-      .attr('class', 'axis axis--x')
-      .attr('transform', `translate(0,${height})`)
-      .call(d3.axisBottom(scaleX_hist).tickValues([0, 20]));
+    // $familyHist__vis
+    //   .append('g')
+    //   .attr('class', 'axis axis--x')
+    //   .attr('transform', `translate(0,${height})`)
+    //   .call(d3.axisBottom(scaleX_hist).tickValues([0, 20]));
 
     const firstLineLength = dataByFamily[0].values.length;
 
@@ -259,7 +258,7 @@ function drawFirstLine() {
           last_y = next_y;
         }
 
-        $context.lineWidth = 1;
+        $context.lineWidth = 2;
         $context.strokeStyle = 'rgba(0, 0, 0, 1)';
         $context.stroke();
 
@@ -278,7 +277,7 @@ function drawFirstLine() {
 
 function animateLines() {
   if (fam_num < totalLines) {
-    // if(fam_num < 100) {
+  // if(fam_num < 100) {
     if (fam_num < maxLines) {
       animate(dataByFamily, fam_num, ms_slow);
       timer = setTimeout(animateLines, ms_slow);
@@ -314,54 +313,71 @@ function drawLine(data, opacity) {
   // given data, draws a line using canvas by feeding the data to d3's line generator
   $context.beginPath();
   line(data);
-  $context.lineWidth = 1;
+  $context.lineWidth = 2;
   $context.strokeStyle = `rgba(0, 0, 0, ${opacity})`;
   $context.stroke();
 }
 
 function addQuintileBackground() {
   // shades the part of the plot that corresponds to each quintile with that quintile's color
-  // also labels each colored area with the quintile name to the left of the plot
 
-  $context.font = '16px National 2';
-  $context.fillStyle = '#000';
-  $context.textAlign = 'start';
-  $context.textBaseline = 'bottom';
-  $context.fillText('higher income', margin.left, margin.top);
-
+  // y-axis labels
+  $context.font = '16px National 2 Narrow Web';
   $context.fillStyle = '#828282';
+  $context.textAlign = 'end';
+  $context.textBaseline = 'bottom';
+  $context.fillText('Higher', 42, margin.top + 20);
+  $context.fillText('income', 42, margin.top + 34);
+  $context.fillText('Lower', 42, margin.top + height - 24);
+  $context.fillText('income', 42, margin.top + height - 10);
+
+  // draw arrows
+  $context.beginPath();
+  $context.moveTo(37, margin.top);
+  $context.lineTo(42, margin.top + 5);
+  $context.lineTo(32, margin.top + 5);
+  $context.fill();
+
+  $context.beginPath();
+  $context.moveTo(37, margin.top + height);
+  $context.lineTo(42, margin.top + height - 5);
+  $context.lineTo(32, margin.top + height - 5);
+  $context.fill();
+
+  // x-axis labels
+  $context.textAlign = 'start';
   $context.fillText(
-    'income in first year',
+    'Income in first year',
     margin.left,
-    margin.top + height + margin.bottom
+    margin.top + height + margin.bottom - 2
   );
 
   $context.textAlign = 'end';
   $context.fillText(
-    'income in last year',
+    'Income in last year',
     margin.left + familyLines_width,
-    margin.top + height + margin.bottom
+    margin.top + height + margin.bottom - 2
   );
 
-  $context.beginPath();
-  $context.moveTo(snapToNearestPoint(margin.left), margin.top + height);
-  $context.lineTo(snapToNearestPoint(margin.left), margin.top + height + 19);
-  $context.lineWidth = 1;
-  $context.strokeStyle = '#828282';
-  $context.stroke();
+  // $context.beginPath();
+  // $context.moveTo(snapToNearestPoint(margin.left), margin.top + height);
+  // $context.lineTo(snapToNearestPoint(margin.left), margin.top + height + 19);
+  // $context.lineWidth = 1;
+  // $context.strokeStyle = '#828282';
+  // $context.stroke();
 
-  $context.beginPath();
-  $context.moveTo(
-    snapToNearestPoint(margin.left + familyLines_width - 2),
-    margin.top + height
-  );
-  $context.lineTo(
-    snapToNearestPoint(margin.left + familyLines_width - 2),
-    margin.top + height + 19
-  );
-  $context.lineWidth = 1;
-  $context.strokeStyle = '#828282';
-  $context.stroke();
+  // $context.beginPath();
+  // $context.moveTo(
+  //   snapToNearestPoint(margin.left + familyLines_width - 2),
+  //   margin.top + height
+  // );
+  // $context.lineTo(
+  //   snapToNearestPoint(margin.left + familyLines_width - 2),
+  //   margin.top + height + 19
+  // );
+  // $context.lineWidth = 1;
+  // $context.strokeStyle = '#828282';
+  // $context.stroke();
 
   quintileNames.forEach((d, i) => {
     const $gradient = $context.createLinearGradient(
@@ -384,7 +400,7 @@ function addQuintileBackground() {
   const axisImage = new Image();
   axisImage.src = '../assets/images/familyLines_yAxis.png';
   axisImage.onload = function() {
-    $context.drawImage(axisImage, 0, margin.top, margin.left, height);
+    $context.drawImage(axisImage, 50, margin.top, margin.left - 50, height);
   };
 }
 
@@ -419,10 +435,10 @@ function updateHistScaleX() {
     scaleX_hist.domain([0, scaleX_hist_breakpoints_copy[0]]);
     scaleX_hist_breakpoints_copy.shift();
 
-    $familyHist__vis
-      .selectAll('.axis.axis--x')
-      .transition()
-      .call(d3.axisBottom(scaleX_hist).tickValues(scaleX_hist.domain()));
+    // $familyHist__vis
+    //   .selectAll('.axis.axis--x')
+    //   .transition()
+    //   .call(d3.axisBottom(scaleX_hist).tickValues(scaleX_hist.domain()));
   }
 }
 
@@ -487,10 +503,10 @@ function replay() {
     { quintile: 'Upper', n: 0 },
   ];
 
-  $familyHist__vis
-    .selectAll('.axis.axis--x')
-    .transition()
-    .call(d3.axisBottom(scaleX_hist).tickValues([0, 20]));
+  // $familyHist__vis
+  //   .selectAll('.axis.axis--x')
+  //   .transition()
+  //   .call(d3.axisBottom(scaleX_hist).tickValues([0, 20]));
 
   $bar_group.data(histData);
 
@@ -528,10 +544,10 @@ function showEnd(countsArray) {
     scaleX_hist_breakpoints[scaleX_hist_breakpoints.length - 1],
   ]);
 
-  $familyHist__vis
-    .selectAll('.axis.axis--x')
-    .transition()
-    .call(d3.axisBottom(scaleX_hist).tickValues(scaleX_hist.domain()));
+  // $familyHist__vis
+  //   .selectAll('.axis.axis--x')
+  //   .transition()
+  //   .call(d3.axisBottom(scaleX_hist).tickValues(scaleX_hist.domain()));
 
   $bar_group.data(countsArray);
 
@@ -552,7 +568,7 @@ function showEnd(countsArray) {
 function snapToNearestPoint(value) {
   // rounds pixel value to nearest half point
   // needed to improve sharpness of lines in canvas
-  return Math.round(value) + 0.5;
+  return Math.round(value);
 }
 
 function wrap(text, width) {
