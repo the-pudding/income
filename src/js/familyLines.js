@@ -24,6 +24,7 @@ const familyHist_width =
     margin_hist.right) *
   DPR;
 const height = (($family__container.node().getBoundingClientRect().width * 0.81) - margin.top - margin.bottom) * DPR;
+// const height = ($family__container.node().getBoundingClientRect().height - margin.top - margin.bottom) * DPR;
 
 // add in 2 canvas elements - one for the background and one for the line
 const $canvas_bg = $canvas__container
@@ -334,7 +335,7 @@ function addQuintileBackground() {
   // shades the part of the plot that corresponds to each quintile with that quintile's color
 
   // y-axis labels
-  $context_bg.font = '16px National 2 Narrow Web';
+  $context_bg.font = `$(16 * DPR)px National 2 Narrow Web`;
   $context_bg.fillStyle = '#828282';
   $context_bg.textAlign = 'end';
   $context_bg.textBaseline = 'bottom';
