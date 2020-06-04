@@ -82,7 +82,7 @@ const scaleY_line = d3
 const scaleX_hist = d3
   .scaleLinear()
   .domain([0, 20])
-  .range([0, familyHist_width]);
+  .range([0, familyHist_width/DPR]);
 
 const scaleX_hist_breakpoints = [
   100,
@@ -99,7 +99,7 @@ let scaleX_hist_breakpoints_copy = scaleX_hist_breakpoints.slice();
 const scaleY_hist = d3
   .scaleBand()
   .domain(quintileNames)
-  .range([height, 0]);
+  .range([height/DPR, 0]);
 
 const colorScale = d3
   .scaleOrdinal()
