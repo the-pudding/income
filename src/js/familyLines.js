@@ -126,8 +126,8 @@ let histData = [
 
 // set up histogram
 const $familyHist__vis = $familyHist__svg
-  .attr('width', familyHist_width + margin_hist.left + margin_hist.right)
-  .attr('height', height + margin.top + margin.bottom)
+  .attr('width', (familyHist_width + margin_hist.left + margin_hist.right)/DPR)
+  .attr('height', (height + margin.top + margin.bottom)/DPR)
   .append('g')
   .attr('transform', `translate(${margin_hist.left},${margin.top})`);
 
@@ -289,6 +289,8 @@ function drawFirstLine() {
 }
 
 function animateLines() {
+  tweenTimer.stop(); // make sure first line animation stops in case user navigates off the page
+
   if (fam_num < totalLines) {
   // if(fam_num < 100) {
     if (fam_num < maxLines) {
