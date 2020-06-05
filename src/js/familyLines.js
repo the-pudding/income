@@ -11,7 +11,7 @@ const $skipToEnd__btn = $section.select('.skipToEnd');
 
 // dimensions
 const DPR = window.devicePixelRatio ? Math.min(window.devicePixelRatio, 2) : 1;
-const margin = { top: 40, bottom: 24, left: 114, right: 0 };
+const margin = { top: 40, bottom: 24, left: 114, right: 5 };
 const margin_hist = { left: 10, right: 55 };
 const familyLines_width =
   ($canvas__container.node().getBoundingClientRect().width -
@@ -31,7 +31,7 @@ const $canvas_bg = $canvas__container
   .append('canvas')
   .attr('class', 'background')
   .attr('width', familyLines_width + margin.left + margin.right)
-  .attr('height', height + margin.top + margin.bottom)
+  .attr('height', height + (margin.top * DPR) + (margin.bottom * DPR))
   .style('width', `${(familyLines_width + margin.left + margin.right) / DPR}px`)
   .style('height', `${(height + margin.top + margin.bottom) / DPR}px`);
 
@@ -41,9 +41,9 @@ const $canvas = $canvas__container
   .append('canvas')
   .attr('class', 'line')
   .attr('width', familyLines_width + margin.left + margin.right)
-  .attr('height', height + margin.top + margin.bottom)
+  .attr('height', height + (margin.top * DPR) + (margin.bottom * DPR))
   .style('width', `${(familyLines_width + margin.left + margin.right) / DPR}px`)
-  .style('height', `${(height + margin.top + margin.bottom) / DPR}px`);
+  .style('height', `${(height + (margin.top * DPR) + (margin.bottom * DPR)) / DPR}px`);
 
 const $context = $canvas.node().getContext('2d');
 
@@ -291,8 +291,8 @@ function drawFirstLine() {
 function animateLines() {
   tweenTimer.stop(); // make sure first line animation stops in case user navigates off the page
 
-  if (fam_num < totalLines) {
-  // if(fam_num < 100) {
+  // if (fam_num < totalLines) {
+  if(fam_num < 100) {
     if (fam_num < maxLines) {
       animate(dataByFamily, fam_num, ms_slow);
       timer = setTimeout(animateLines, ms_slow);
