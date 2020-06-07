@@ -8,6 +8,12 @@ const $submitBtn = $section.select('.submitBtn');
 const $answer__container = $section.select('.answer__figure');
 const $answer__svg = $answer__container.select('svg');
 
+let $brush;
+let $bars;
+let $guess__vis;
+let $answer__vis;
+let $answer__bars;
+
 
 const answerData = [{levels: 0, share: 0.6},
 				 	{levels: 1, share: 11.1},
@@ -23,80 +29,164 @@ let guessData = [{levels: 0, share: 0},
 
 // dimensions
 const margin = {top: 20, bottom: 50, left: 46, right: 0};
-let width = $guess__container.node().offsetWidth - margin.left - margin.right;
-let height = $guess__container.node().offsetHeight - margin.top - margin.bottom;
+let width = 0;
+let height = 0;
 
 // scales
 const scaleX = d3.scaleBand()
 	.domain([0, 1, 2, 3, 4])
-	.range([0, width])
 	.paddingInner(0.2)
 	.paddingOuter(0.6);
 
 const scaleY = d3.scaleLinear()
-	.domain([0, 100])
-	.range([height, 0]);
+	.domain([0, 100]);
+
 
 // console.log($guess__container.node().offsetWidth, $guess__container.node().offsetHeight)
+function setup() {
+	// set up chart
+	width = $guess__container.node().offsetWidth - margin.left - margin.right;
+	height = $guess__container.node().offsetHeight - margin.top - margin.bottom;
+	scaleX.range([0, width]);
+	scaleY.range([height, 0]);
 
-let $guess__vis = $guess__svg.attr('width', width + margin.left + margin.right)
-	.attr('height', height + margin.top + margin.bottom)
-	.append('g')
-	.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+	$guess__vis = $guess__svg.attr('width', width + margin.left + margin.right)
+		.attr('height', height + margin.top + margin.bottom)
+		.append('g')
+		.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-$guess__vis.append('g')
-	.attr('class', 'axis axis--x')
-	.attr('transform', 'translate(0,' + height + ')')
-	.call(d3.axisBottom(scaleX))
-	.append('text')
-	.attr('class', 'axisTitle')
-	.attr('x', width / 2)
-	.attr('y', margin.bottom - 2)
-	.text('Furthest Quintiles Moved')
-	.style('fill', '#000');
+	// add axes
+	$guess__vis.append('g')
+		.attr('class', 'axis axis--x')
+		.attr('transform', 'translate(0,' + height + ')')
+		.call(d3.axisBottom(scaleX))
+		.append('text')
+		.attr('class', 'axisTitle')
+		.attr('x', width / 2)
+		.attr('y', margin.bottom - 2)
+		.text('Furthest Quintiles Moved')
+		.style('fill', '#000');
 
-$guess__vis.append('g')
-	.attr('class', 'axis axis--y')
-	.attr('transform', 'translate(-' + margin.left + ', 0)')
-	.call(d3.axisRight(scaleY).ticks(5).tickFormat(d => d === 100 ? d + '% of families' : d + '%').tickSize(width + margin.left))
-	.selectAll('text')
-		.attr('x', 0)
-		.attr('dy', 14)
-		.style('text-anchor', 'start');
+	$guess__vis.append('g')
+		.attr('class', 'axis axis--y')
+		.attr('transform', 'translate(-' + margin.left + ', 0)')
+		.call(d3.axisRight(scaleY).ticks(5).tickFormat(d => d === 100 ? d + '% of families' : d + '%').tickSize(width + margin.left))
+		.selectAll('text')
+			.attr('x', 0)
+			.attr('dy', 14)
+			.style('text-anchor', 'start');
 
-let $brush = d3.brushY()
-	.extent(function(d, i) {
+	// set up brushes for user-dragged bars
+	$brush = d3.brushY()
+		.extent(function(d, i) {
+			return [[scaleX(d.levels), 0],[scaleX(d.levels) + scaleX.bandwidth(), height]];
+		})
+		.on('brush', brushMove)
+		.on('end', brushEnd);
+
+	$bars = $guess__vis.selectAll('.brush')
+		.data(guessData)
+		.enter()
+		.append('g')
+		.attr('class', 'brush')
+		.append('g')
+		.call($brush)
+		.call($brush.move, function(d) { return [d.share, 0].map(scaleY); }) // this actually draws the "bars"
+		.call(g => g.select('.overlay')
+			.datum({type: 'selection'})
+			.on('mousedown touchstart', resizeBar)
+		);
+
+	d3.selectAll(".selection")
+		.style("fill", "#124653")
+		.style("fill-opacity", "0.8");
+
+	// get rid of handle at the bottom of the bars
+	$guess__vis.selectAll('.handle--s').remove();
+
+	// change cursor from the move one to regular auto
+	$guess__vis.selectAll('.selection').attr('cursor', 'auto');
+	$guess__vis.selectAll('.overlay').attr('cursor', 'auto');
+
+	// disable ability to completely redraw the bar anywhere within its lane
+	// $guess__vis.selectAll('.overlay').attr('pointer-events', 'none');
+
+	// set up answer graph
+	$answer__vis = $guess__svg.append('g')
+		.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+		.attr('class', 'answer noDisplay');
+
+	$answer__bars = $answer__vis.selectAll('.answerBar')
+		.data(answerData)
+		.enter()
+		.append('g');
+
+	$answer__bars.append('rect')
+		.attr('class', 'answerBar')
+		.attr('x', d => scaleX(d.levels))
+		.attr('y', d => height)
+		.attr('width', scaleX.bandwidth())
+		.attr('height', 0);
+
+	$answer__bars.append('text')
+		.attr('class', 'answerBarLabel')
+		.attr('x', d => scaleX(d.levels) + scaleX.bandwidth()/2)
+		.attr('y', d => scaleY(d.share) - 10)
+		.text(d => d.share + '%')
+		.style('opacity', 0);
+}
+
+function resize() {
+	// get new dimensions of the container element
+	width = $guess__container.node().offsetWidth - margin.left - margin.right;
+	height = (width * 0.54) - margin.top - margin.bottom;
+	// height = $guess__container.node().offsetHeight - margin.top - margin.bottom;
+
+	// update scales
+	scaleX.range([0, width]);
+	scaleY.range([height, 0]);
+
+	// resize chart
+	$guess__svg.attr('width', width + margin.left + margin.right)
+		.attr('height', height + margin.top + margin.bottom);
+
+	// resize axes
+	$guess__vis.selectAll('.axis.axis--x')
+		.attr('transform', 'translate(0,' + height + ')')
+		.call(d3.axisBottom(scaleX))
+		.select('.axisTitle')
+			.attr('x', width / 2)
+			.attr('y', margin.bottom - 2);
+
+	$guess__vis.selectAll('.axis.axis--y')
+		.attr('transform', 'translate(-' + margin.left + ', 0)')
+		.call(d3.axisRight(scaleY).ticks(5).tickFormat(d => d === 100 ? d + '% of families' : d + '%').tickSize(width + margin.left))
+		.selectAll('text')
+			.attr('x', 0);
+
+	// resize brushes
+	$brush.extent(function(d, i) {
 		return [[scaleX(d.levels), 0],[scaleX(d.levels) + scaleX.bandwidth(), height]];
-	})
-	.on('brush', brushMove)
-	.on('end', brushEnd);
+	});
 
-let $bars = $guess__vis.selectAll('.brush')
-	.data(guessData)
-	.enter()
-	.append('g')
-	.attr('class', 'brush')
-	.append('g')
-	.call($brush)
-	.call($brush.move, function(d) { return [d.share, 0].map(scaleY); }) // this actually draws the "bars"
-	.call(g => g.select('.overlay')
-		.datum({type: 'selection'})
-		.on('mousedown touchstart', resizeBar)
-	);
+	$bars.call($brush)
+		.call($brush.move, function(d) { return [d.share, 0].map(scaleY); }) ;
 
-d3.selectAll(".selection")
-	.style("fill", "#124653")
-	.style("fill-opacity", "0.8");
+	// resize answer bars and labels
 
-// get rid of handle at the bottom of the bars
-$guess__vis.selectAll('.handle--s').remove();
+	// first determine if the answer is revealed or not - this affects what height to set the bars at
+	const answerShown = !$answer__vis.classed('noDisplay');
 
-// change cursor from the move one to regular auto
-$guess__vis.selectAll('.selection').attr('cursor', 'auto');
-$guess__vis.selectAll('.overlay').attr('cursor', 'auto');
+	$answer__bars.selectAll('.answerBar')
+		.attr('x', d => scaleX(d.levels))
+		.attr('y', d => answerShown ? scaleY(d.share) : height)
+		.attr('width', scaleX.bandwidth())
+		.attr('height', d => answerShown ?  height - scaleY(d.share) : 0);
 
-// disable ability to completely redraw the bar anywhere within its lane
-// $guess__vis.selectAll('.overlay').attr('pointer-events', 'none');
+	$answer__bars.selectAll('.answerBarLabel')
+		.attr('x', d => scaleX(d.levels) + scaleX.bandwidth()/2)
+		.attr('y', d => scaleY(d.share) - 10);
+}
 
 function brushMove() {
 	if (!d3.event.sourceEvent) return;  // prevents user from moving the bar entirely (but only after the first brush event has occurred)
@@ -128,7 +218,6 @@ function brushMove() {
     }
 
 	updateWarningMsg();
-
 }
 
 function brushEnd() {
@@ -171,7 +260,7 @@ function updateInterpretText() {
 	$interpretText.text('According to you, roughly equal numbers of families move a lot as do those that move a little.');
 }
 
-$submitBtn.on('click', showAnswer);
+// $submitBtn.on('click', showAnswer);
 
 function showAnswer() {
 	$answer__vis.classed('noDisplay', false);
@@ -197,26 +286,9 @@ function showAnswer() {
 		.then(() => d3.selectAll('.answerBarLabel').style('opacity', 1));
 }
 
-// draw answer graph - TODO finesse this so that the bars transition from zero to the data value (i.e., "grow") after the user clicks the submit button?
-let $answer__vis = $guess__svg.append('g')
-	.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-	.attr('class', 'answer noDisplay');
+function init() {
+	setup();
+	$submitBtn.on('click', showAnswer);
+}
 
-let $answer__bars = $answer__vis.selectAll('.answerBar')
-	.data(answerData)
-	.enter()
-	.append('g');
-
-$answer__bars.append('rect')
-	.attr('class', 'answerBar')
-	.attr('x', d => scaleX(d.levels))
-	.attr('y', d => height)
-	.attr('width', scaleX.bandwidth())
-	.attr('height', 0);
-
-$answer__bars.append('text')
-	.attr('class', 'answerBarLabel')
-	.attr('x', d => scaleX(d.levels) + scaleX.bandwidth()/2)
-	.attr('y', d => scaleY(d.share) - 10)
-	.text(d => d.share + '%')
-	.style('opacity', 0);
+export default { init, resize };

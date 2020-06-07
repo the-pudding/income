@@ -1,8 +1,14 @@
 /* global d3 */
-function resize() {}
+import guessMovement from './guessMovement';
+
+function resize() {
+	console.log('Resize!');
+	guessMovement.resize();
+}
 
 function init() {
-  // console.log('Make something awesome!');
+  console.log('Make something awesome!');
+  guessMovement.init();
 }
 
 export default { init, resize };
