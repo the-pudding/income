@@ -139,7 +139,7 @@ function setup() {
 function resize() {
 	// get new dimensions of the container element
 	width = $guess__container.node().offsetWidth - margin.left - margin.right;
-	height = (width * 0.54) - margin.top - margin.bottom;
+	height = width < 470 ? (width * 0.7) - margin.top - margin.bottom : (width * 0.54) - margin.top - margin.bottom;
 	// height = $guess__container.node().offsetHeight - margin.top - margin.bottom;
 
 	// update scales
