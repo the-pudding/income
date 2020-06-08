@@ -137,11 +137,11 @@ function setup() {
 
   // line generator
   line = d3
-  .line()
-  .x(d => snapToNearestPoint(scaleX_line(d.year)))
-  .y(d => snapToNearestPoint(scaleY_line(d.pctile)))
-  .curve(d3.curveStepAfter)
-  .context($context);
+    .line()
+    .x(d => snapToNearestPoint(scaleX_line(d.year)))
+    .y(d => snapToNearestPoint(scaleY_line(d.pctile)))
+    .curve(d3.curveStepAfter)
+    .context($context);
 
   // set up histogram
   $familyHist__vis = $familyHist__svg
@@ -185,6 +185,67 @@ function setup() {
     .attr('x', margin_hist.left)
     .attr('y', '2.3em')
     .text('(across x families)');
+}
+
+function resize() {
+  // get new dimensions of the container element
+  familyLines_width =
+    ($canvas__container.node().getBoundingClientRect().width -
+      margin.left -
+      margin.right) *
+    DPR;
+  familyHist_width =
+    ($familyHist__svg.node().getBoundingClientRect().width -
+      margin_hist.left -
+      margin_hist.right) *
+    DPR;
+  height = (($family__container.node().getBoundingClientRect().width * 0.81) - margin.top - margin.bottom) * DPR;
+
+  // update scales
+  scaleX_line.range([margin.left, margin.left + familyLines_width]);
+  scaleY_line.range([height + margin.top, margin.top]);
+
+  scaleX_hist.range([0, familyHist_width/DPR]);
+  scaleY_hist.range([height/DPR, 0]);
+
+  // line generator
+  line = d3
+    .line()
+    .x(d => snapToNearestPoint(scaleX_line(d.year)))
+    .y(d => snapToNearestPoint(scaleY_line(d.pctile)))
+    .curve(d3.curveStepAfter)
+    .context($context);
+
+  // resize canvases and svg
+  $canvas_bg
+    .attr('width', familyLines_width + margin.left + margin.right)
+    .attr('height', height + (margin.top * DPR) + (margin.bottom * DPR))
+    .style('width', `${(familyLines_width + margin.left + margin.right) / DPR}px`)
+    .style('height', `${(height + margin.top + margin.bottom) / DPR}px`);
+
+  $canvas
+    .attr('width', familyLines_width + margin.left + margin.right)
+    .attr('height', height + (margin.top * DPR) + (margin.bottom * DPR))
+    .style('width', `${(familyLines_width + margin.left + margin.right) / DPR}px`)
+    .style('height', `${(height + (margin.top * DPR) + (margin.bottom * DPR)) / DPR}px`);
+
+  $familyHist__vis
+    .attr('width', (familyHist_width + margin_hist.left + margin_hist.right)/DPR)
+    .attr('height', (height + margin.top + margin.bottom)/DPR);
+
+  // clear current background canvas and redraw with new dimensions
+  $context_bg.clearRect(0, 0, $canvas_bg.attr('width'), $canvas_bg.attr('height'));
+  addQuintileBackground();
+
+  // update bar lengths and label placements in histogram
+  $bars
+    .attr('y', d => scaleY_hist(d.quintile))
+    .attr('width', d => scaleX_hist(d.n))
+    .attr('height', scaleY_hist.bandwidth());
+
+  $bar_labels
+    .attr('x', d => scaleX_hist(d.n) + 5)
+    .attr('y', d => scaleY_hist(d.quintile) + scaleY_hist.bandwidth() / 2);
 }
 
 function drawFirstLine() {
@@ -647,4 +708,4 @@ function init() {
     .catch(console.error);
 }
 
-export default { init };
+export default { init, resize };

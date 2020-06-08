@@ -5,6 +5,7 @@ import familyLines from './familyLines';
 function resize() {
 	console.log('Resize!');
 	guessMovement.resize();
+	familyLines.resize();
 }
 
 function init() {
