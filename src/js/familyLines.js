@@ -199,7 +199,12 @@ function resize() {
       margin_hist.left -
       margin_hist.right) *
     DPR;
-  height = (($family__container.node().getBoundingClientRect().width * 0.81) - margin.top - margin.bottom) * DPR;
+  if($canvas__container.node().getBoundingClientRect().width <= 430) {
+    height = ($canvas__container.node().getBoundingClientRect().height - margin.top - margin.bottom) * DPR;
+  }
+  else {
+    height = (($family__container.node().getBoundingClientRect().width * 0.81) - margin.top - margin.bottom) * DPR;
+  }
 
   // update scales
   scaleX_line.range([margin.left, margin.left + familyLines_width]);
