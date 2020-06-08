@@ -325,8 +325,8 @@ function drawFirstLine() {
 function animateLines() {
   tweenTimer.stop(); // make sure first line animation stops in case user navigates off the page
 
-  // if (fam_num < totalLines) {
-  if(fam_num < 100) {
+  if (fam_num < totalLines) {
+  // if(fam_num < 100) {
     if (fam_num < maxLines) {
       animate(dataByFamily, fam_num, ms_slow);
       timer = setTimeout(animateLines, ms_slow);
@@ -449,7 +449,7 @@ function addQuintileBackground() {
   const axisImage = new Image();
   axisImage.src = '../assets/images/familyLines_yAxis.png';
   axisImage.onload = function() {
-    $context_bg.drawImage(axisImage, 50, margin.top, (margin.left - 10) - 50, height);
+    $context_bg.drawImage(axisImage, 50, margin.top, height * 0.1, height);
   };
 }
 
