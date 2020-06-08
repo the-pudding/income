@@ -13,40 +13,19 @@ const $skipToEnd__btn = $section.select('.skipToEnd');
 const DPR = window.devicePixelRatio ? Math.min(window.devicePixelRatio, 2) : 1;
 const margin = { top: 40, bottom: 24, left: 114, right: 5 };
 const margin_hist = { left: 10, right: 55 };
-const familyLines_width =
-  ($canvas__container.node().getBoundingClientRect().width -
-    margin.left -
-    margin.right) *
-  DPR;
-const familyHist_width =
-  ($familyHist__svg.node().getBoundingClientRect().width -
-    margin_hist.left -
-    margin_hist.right) *
-  DPR;
-const height = (($family__container.node().getBoundingClientRect().width * 0.81) - margin.top - margin.bottom) * DPR;
-// const height = ($family__container.node().getBoundingClientRect().height - margin.top - margin.bottom) * DPR;
+let familyLines_width = 0;
+let familyHist_width = 0;
+let height = 0;
 
-// add in 2 canvas elements - one for the background and one for the line
-const $canvas_bg = $canvas__container
-  .append('canvas')
-  .attr('class', 'background')
-  .attr('width', familyLines_width + margin.left + margin.right)
-  .attr('height', height + (margin.top * DPR) + (margin.bottom * DPR))
-  .style('width', `${(familyLines_width + margin.left + margin.right) / DPR}px`)
-  .style('height', `${(height + margin.top + margin.bottom) / DPR}px`);
+let $canvas_bg;
+let $context_bg;
+let $canvas;
+let $context;
 
-const $context_bg = $canvas_bg.node().getContext('2d');
-
-const $canvas = $canvas__container
-  .append('canvas')
-  .attr('class', 'line')
-  .attr('width', familyLines_width + margin.left + margin.right)
-  .attr('height', height + (margin.top * DPR) + (margin.bottom * DPR))
-  .style('width', `${(familyLines_width + margin.left + margin.right) / DPR}px`)
-  .style('height', `${(height + (margin.top * DPR) + (margin.bottom * DPR)) / DPR}px`);
-
-const $context = $canvas.node().getContext('2d');
-
+let $familyHist__vis;
+let $bar_group;
+let $bars;
+let $bar_labels;
 
 // parameters for line chart animation
 let timer;
@@ -70,19 +49,15 @@ const quintileNames = [
 ];
 
 const scaleX_line = d3
-  .scaleLinear()
-  // .domain([0, 40])
-  .range([margin.left, margin.left + familyLines_width]);
+  .scaleLinear();
 
 const scaleY_line = d3
   .scaleLinear()
-  .domain([0, 100])
-  .range([height + margin.top, margin.top]);
+  .domain([0, 100]);
 
 const scaleX_hist = d3
   .scaleLinear()
-  .domain([0, 20])
-  .range([0, familyHist_width/DPR]);
+  .domain([0, 20]);
 
 const scaleX_hist_breakpoints = [
   100,
@@ -98,20 +73,14 @@ let scaleX_hist_breakpoints_copy = scaleX_hist_breakpoints.slice();
 
 const scaleY_hist = d3
   .scaleBand()
-  .domain(quintileNames)
-  .range([height/DPR, 0]);
+  .domain(quintileNames);
 
 const colorScale = d3
   .scaleOrdinal()
   .domain(quintileNames)
   .range(['#FFBFBF', '#FF8850', '#FEE074', '#00A08F', '#124653']);
 
-const line = d3
-  .line()
-  .x(d => snapToNearestPoint(scaleX_line(d.year)))
-  .y(d => snapToNearestPoint(scaleY_line(d.pctile)))
-  .curve(d3.curveStepAfter)
-  .context($context);
+let line;
 
 const commaFmt = d3.format(',.0f');
 
@@ -124,100 +93,99 @@ let histData = [
   { quintile: 'Upper', n: 0 },
 ];
 
-// set up histogram
-const $familyHist__vis = $familyHist__svg
-  .attr('width', (familyHist_width + margin_hist.left + margin_hist.right)/DPR)
-  .attr('height', (height + margin.top + margin.bottom)/DPR)
-  .append('g')
-  .attr('transform', `translate(${margin_hist.left},${margin.top})`);
+function setup() {
+  // dimensions
+  familyLines_width =
+    ($canvas__container.node().getBoundingClientRect().width -
+      margin.left -
+      margin.right) *
+    DPR;
+  familyHist_width =
+    ($familyHist__svg.node().getBoundingClientRect().width -
+      margin_hist.left -
+      margin_hist.right) *
+    DPR;
+  height = (($family__container.node().getBoundingClientRect().width * 0.81) - margin.top - margin.bottom) * DPR;
 
-const $bar_group = $familyHist__vis
-  .selectAll('.bar_group')
-  .data(histData)
-  .enter()
-  .append('g')
-  .attr('class', 'bar_group');
+  // set up canvases - one for the background, one for the line
+  $canvas_bg = $canvas__container
+    .append('canvas')
+    .attr('class', 'background')
+    .attr('width', familyLines_width + margin.left + margin.right)
+    .attr('height', height + (margin.top * DPR) + (margin.bottom * DPR))
+    .style('width', `${(familyLines_width + margin.left + margin.right) / DPR}px`)
+    .style('height', `${(height + margin.top + margin.bottom) / DPR}px`);
 
-const $bars = $bar_group
-  .append('rect')
-  .attr('class', 'bar')
-  .attr('x', 0)
-  .attr('y', d => scaleY_hist(d.quintile))
-  .attr('width', d => scaleX_hist(d.n))
-  .attr('height', scaleY_hist.bandwidth())
-  .style('fill', d => colorScale(d.quintile));
+  $context_bg = $canvas_bg.node().getContext('2d');
 
-const $bar_labels = $bar_group
-  .append('text')
-  .attr('class', 'label')
-  .attr('x', 5)
-  .attr('y', d => scaleY_hist(d.quintile) + scaleY_hist.bandwidth() / 2)
-  .attr('dy', '.5em')
-  .text(d => commaFmt(d.n));
+  $canvas = $canvas__container
+    .append('canvas')
+    .attr('class', 'line')
+    .attr('width', familyLines_width + margin.left + margin.right)
+    .attr('height', height + (margin.top * DPR) + (margin.bottom * DPR))
+    .style('width', `${(familyLines_width + margin.left + margin.right) / DPR}px`)
+    .style('height', `${(height + (margin.top * DPR) + (margin.bottom * DPR)) / DPR}px`);
 
-$familyHist__svg
-  .append('text')
-  .attr('x', margin_hist.left)
-  .attr('y', '1em')
-  .text('Years in Each Quintile');
+  $context = $canvas.node().getContext('2d');
 
-$familyHist__svg
-  .append('text')
-  .attr('x', margin_hist.left)
-  .attr('y', '2.3em')
-  .text('(across x families)');
+  // scales
+  scaleX_line.range([margin.left, margin.left + familyLines_width]);
+  scaleY_line.range([height + margin.top, margin.top]);
 
-loadData('line_chart_data.csv')
-  .then(result => {
-    // nest data because that's the structure d3 needs to make line charts
-    dataByFamily = d3
-      .nest()
-      .key(d => d.id)
-      .entries(result);
+  scaleX_hist.range([0, familyHist_width/DPR]);
+  scaleY_hist.range([height/DPR, 0]);
 
-    totalLines = dataByFamily.length;
+  // line generator
+  line = d3
+  .line()
+  .x(d => snapToNearestPoint(scaleX_line(d.year)))
+  .y(d => snapToNearestPoint(scaleY_line(d.pctile)))
+  .curve(d3.curveStepAfter)
+  .context($context);
 
-    // set scale domains
-    scaleX_line.domain([0, d3.max(result, d => +d.year)]).nice();
-    const counts = countFrequency(result);
-    const countsArray = objToArray(counts);
+  // set up histogram
+  $familyHist__vis = $familyHist__svg
+    .attr('width', (familyHist_width + margin_hist.left + margin_hist.right)/DPR)
+    .attr('height', (height + margin.top + margin.bottom)/DPR)
+    .append('g')
+    .attr('transform', `translate(${margin_hist.left},${margin.top})`);
 
-    // append axis for debugging purposes
-    // $familyLines__vis.append('g')
-    // 	.attr('class', 'axis axis--y')
-    // 	.call(d3.axisLeft(scaleY_line));
+  $bar_group = $familyHist__vis
+    .selectAll('.bar_group')
+    .data(histData)
+    .enter()
+    .append('g')
+    .attr('class', 'bar_group');
 
-    // $familyLines__vis.append('g')
-    // 	.attr('class', 'axis axis--x')
-    // 	.attr('transform', 'translate(0,' + height + ')')
-    // 	.call(d3.axisBottom(scaleX_line));
+  $bars = $bar_group
+    .append('rect')
+    .attr('class', 'bar')
+    .attr('x', 0)
+    .attr('y', d => scaleY_hist(d.quintile))
+    .attr('width', d => scaleX_hist(d.n))
+    .attr('height', scaleY_hist.bandwidth())
+    .style('fill', d => colorScale(d.quintile));
 
-    addQuintileBackground();
+  $bar_labels = $bar_group
+    .append('text')
+    .attr('class', 'label')
+    .attr('x', 5)
+    .attr('y', d => scaleY_hist(d.quintile) + scaleY_hist.bandwidth() / 2)
+    .attr('dy', '.5em')
+    .text(d => commaFmt(d.n));
 
-    // $familyHist__vis
-    //   .append('g')
-    //   .attr('class', 'axis axis--x')
-    //   .attr('transform', `translate(0,${height})`)
-    //   .call(d3.axisBottom(scaleX_hist).tickValues([0, 20]));
+  $familyHist__svg
+    .append('text')
+    .attr('x', margin_hist.left)
+    .attr('y', '1em')
+    .text('Years in Each Quintile');
 
-    const firstLineLength = dataByFamily[0].values.length;
-
-    enterView({
-      selector: '.family__figure',
-      offset: 0.5,
-      enter() {
-        drawFirstLine();
-        timer = setTimeout(animateLines, (firstLineLength + 1) * ms_slow);
-        // timer = setTimeout(animateLines, 0);
-      },
-      once: true,
-    });
-
-    // event handlers
-    $replay__btn.on('click', () => replay());
-    $skipToEnd__btn.on('click', () => showEnd(countsArray));
-  })
-  .catch(console.error);
+  $familyHist__svg
+    .append('text')
+    .attr('x', margin_hist.left)
+    .attr('y', '2.3em')
+    .text('(across x families)');
+}
 
 function drawFirstLine() {
   // loop through data, call canvas to draw incrementally to add next year of data to line
@@ -282,7 +250,7 @@ function drawFirstLine() {
       });
     }
 
-    updateHistogram(firstLineData.slice(length, length + 1), ms_slow / 2);
+    updateHistogram(firstLineData.slice(length, length + 1), ms_slow);
 
     length++;
   }
@@ -622,3 +590,61 @@ function wrap(text, width) {
     }
   });
 }
+
+function init() {
+  setup();
+
+  loadData('line_chart_data.csv')
+    .then(result => {
+      // nest data because that's the structure d3 needs to make line charts
+      dataByFamily = d3
+        .nest()
+        .key(d => d.id)
+        .entries(result);
+
+      totalLines = dataByFamily.length;
+
+      // set scale domains
+      scaleX_line.domain([0, d3.max(result, d => +d.year)]).nice();
+      const counts = countFrequency(result);
+      const countsArray = objToArray(counts);
+
+      // append axis for debugging purposes
+      // $familyLines__vis.append('g')
+      //  .attr('class', 'axis axis--y')
+      //  .call(d3.axisLeft(scaleY_line));
+
+      // $familyLines__vis.append('g')
+      //  .attr('class', 'axis axis--x')
+      //  .attr('transform', 'translate(0,' + height + ')')
+      //  .call(d3.axisBottom(scaleX_line));
+
+      addQuintileBackground();
+
+      // $familyHist__vis
+      //   .append('g')
+      //   .attr('class', 'axis axis--x')
+      //   .attr('transform', `translate(0,${height})`)
+      //   .call(d3.axisBottom(scaleX_hist).tickValues([0, 20]));
+
+      const firstLineLength = dataByFamily[0].values.length;
+
+      enterView({
+        selector: '.family__figure',
+        offset: 0.5,
+        enter() {
+          drawFirstLine();
+          timer = setTimeout(animateLines, (firstLineLength + 1) * ms_slow);
+          // timer = setTimeout(animateLines, 0);
+        },
+        once: true,
+      });
+
+      // event handlers
+      $replay__btn.on('click', () => replay());
+      $skipToEnd__btn.on('click', () => showEnd(countsArray));
+    })
+    .catch(console.error);
+}
+
+export default { init };
