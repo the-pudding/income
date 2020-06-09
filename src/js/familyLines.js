@@ -447,7 +447,7 @@ function addQuintileBackground() {
   });
 
   const axisImage = new Image();
-  axisImage.src = '../assets/images/familyLines_yAxis.png';
+  axisImage.src = 'assets/images/familyLines_yAxis.png';
   axisImage.onload = function() {
     $context_bg.drawImage(axisImage, 50, margin.top, height * 0.1, height);
   };
