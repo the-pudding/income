@@ -111,8 +111,8 @@ function setup() {
   $canvas_bg = $canvas__container
     .append('canvas')
     .attr('class', 'background')
-    .attr('width', familyLines_width + margin.left + margin.right)
-    .attr('height', height + (margin.top * DPR) + (margin.bottom * DPR))
+    .attr('width', (familyLines_width + margin.left + margin.right) * DPR)
+    .attr('height', (height + margin.top + margin.bottom) * DPR)
     .style('width', `${(familyLines_width + margin.left + margin.right) / DPR}px`)
     .style('height', `${(height + margin.top + margin.bottom) / DPR}px`);
 
@@ -121,10 +121,10 @@ function setup() {
   $canvas = $canvas__container
     .append('canvas')
     .attr('class', 'line')
-    .attr('width', familyLines_width + margin.left + margin.right)
-    .attr('height', height + (margin.top * DPR) + (margin.bottom * DPR))
+    .attr('width', (familyLines_width + margin.left + margin.right) * DPR)
+    .attr('height', (height + margin.top + margin.bottom) * DPR)
     .style('width', `${(familyLines_width + margin.left + margin.right) / DPR}px`)
-    .style('height', `${(height + (margin.top * DPR) + (margin.bottom * DPR)) / DPR}px`);
+    .style('height', `${(height + margin.top + margin.bottom) / DPR}px`);
 
   $context = $canvas.node().getContext('2d');
 
@@ -223,16 +223,16 @@ function resize() {
 
   // resize canvases and svg
   $canvas_bg
-    .attr('width', familyLines_width + margin.left + margin.right)
-    .attr('height', height + (margin.top * DPR) + (margin.bottom * DPR))
+    .attr('width', (familyLines_width + margin.left + margin.right) * DPR)
+    .attr('height', (height + margin.top + margin.bottom) * DPR)
     .style('width', `${(familyLines_width + margin.left + margin.right) / DPR}px`)
     .style('height', `${(height + margin.top + margin.bottom) / DPR}px`);
 
   $canvas
-    .attr('width', familyLines_width + margin.left + margin.right)
-    .attr('height', height + (margin.top * DPR) + (margin.bottom * DPR))
+    .attr('width', (familyLines_width + margin.left + margin.right) * DPR)
+    .attr('height', (height + margin.top + margin.bottom) * DPR)
     .style('width', `${(familyLines_width + margin.left + margin.right) / DPR}px`)
-    .style('height', `${(height + (margin.top * DPR) + (margin.bottom * DPR)) / DPR}px`);
+    .style('height', `${(height + margin.top + margin.bottom) / DPR}px`);
 
   $familyHist__vis
     .attr('width', (familyHist_width + margin_hist.left + margin_hist.right)/DPR)
