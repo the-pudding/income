@@ -111,20 +111,20 @@ function setup() {
   $canvas_bg = $canvas__container
     .append('canvas')
     .attr('class', 'background')
-    .attr('width', (familyLines_width + margin.left + margin.right) * DPR)
-    .attr('height', (height + margin.top + margin.bottom) * DPR)
-    .style('width', `${(familyLines_width + margin.left + margin.right) / DPR}px`)
-    .style('height', `${(height + margin.top + margin.bottom) / DPR}px`);
+    .attr('width', familyLines_width + (margin.left + margin.right) * DPR)
+    .attr('height', height + (margin.top + margin.bottom) * DPR)
+    .style('width', `${(familyLines_width / DPR) + margin.left + margin.right}px`)
+    .style('height', `${(height / DPR) + margin.top + margin.bottom}px`);
 
   $context_bg = $canvas_bg.node().getContext('2d');
 
   $canvas = $canvas__container
     .append('canvas')
     .attr('class', 'line')
-    .attr('width', (familyLines_width + margin.left + margin.right) * DPR)
-    .attr('height', (height + margin.top + margin.bottom) * DPR)
-    .style('width', `${(familyLines_width + margin.left + margin.right) / DPR}px`)
-    .style('height', `${(height + margin.top + margin.bottom) / DPR}px`);
+    .attr('width', familyLines_width + (margin.left + margin.right) * DPR)
+    .attr('height', height + (margin.top + margin.bottom) * DPR)
+    .style('width', `${(familyLines_width / DPR) + margin.left + margin.right}px`)
+    .style('height', `${(height / DPR) + margin.top + margin.bottom}px`);
 
   $context = $canvas.node().getContext('2d');
 
@@ -145,8 +145,8 @@ function setup() {
 
   // set up histogram
   $familyHist__vis = $familyHist__svg
-    .attr('width', (familyHist_width + margin_hist.left + margin_hist.right)/DPR)
-    .attr('height', (height + margin.top + margin.bottom)/DPR)
+    .attr('width', (familyHist_width / DPR) + margin_hist.left + margin_hist.right)
+    .attr('height', (height / DPR) + margin.top + margin.bottom)
     .append('g')
     .attr('transform', `translate(${margin_hist.left},${margin.top})`);
 
@@ -223,20 +223,20 @@ function resize() {
 
   // resize canvases and svg
   $canvas_bg
-    .attr('width', (familyLines_width + margin.left + margin.right) * DPR)
-    .attr('height', (height + margin.top + margin.bottom) * DPR)
-    .style('width', `${(familyLines_width + margin.left + margin.right) / DPR}px`)
-    .style('height', `${(height + margin.top + margin.bottom) / DPR}px`);
+    .attr('width', familyLines_width + (margin.left + margin.right) * DPR)
+    .attr('height', height + (margin.top + margin.bottom) * DPR)
+    .style('width', `${(familyLines_width / DPR) + margin.left + margin.right}px`)
+    .style('height', `${(height / DPR) + margin.top + margin.bottom}px`);
 
   $canvas
-    .attr('width', (familyLines_width + margin.left + margin.right) * DPR)
-    .attr('height', (height + margin.top + margin.bottom) * DPR)
-    .style('width', `${(familyLines_width + margin.left + margin.right) / DPR}px`)
-    .style('height', `${(height + margin.top + margin.bottom) / DPR}px`);
+    .attr('width', familyLines_width + (margin.left + margin.right) * DPR)
+    .attr('height', height + (margin.top + margin.bottom) * DPR)
+    .style('width', `${(familyLines_width / DPR) + margin.left + margin.right}px`)
+    .style('height', `${(height / DPR) + margin.top + margin.bottom}px`);
 
   $familyHist__vis
-    .attr('width', (familyHist_width + margin_hist.left + margin_hist.right)/DPR)
-    .attr('height', (height + margin.top + margin.bottom)/DPR);
+    .attr('width', (familyHist_width / DPR) + margin_hist.left + margin_hist.right)
+    .attr('height', (height / DPR) + margin.top + margin.bottom);
 
   // clear current background canvas and redraw with new dimensions
   $context_bg.clearRect(0, 0, $canvas_bg.attr('width'), $canvas_bg.attr('height'));
