@@ -15,4 +15,7 @@
 		<p class='interpretText'></p>
 	</figure>
 	<button class='submitBtn' aria-disabled="true">Looks good, submit it</button>
+	{{#each doc.postMoving}}
+	<p class='prose'>{{{value}}}</p>
+	{{/each}}
 </section>
