@@ -7,10 +7,20 @@
 	"keywords": "tk",
 	"imgFacebook": "https://pudding.cool/year/month/name/assets/social/social-facebook.jpg",
 	"imgTwitter": "https://pudding.cool/year/month/name/assets/social/social-twitter.jpg",
-	"author": {
-		"name": "The Pudding",
+	"author1": {
+		"name": "Alice Feng",
 		"url": "https://pudding.cool/author/the-pudding-team",
-		"twitterHandle": "@puddingviz"
+		"twitterHandle": "@fleecealeece"
+	},
+	"author2": {
+		"name": "Russell Goldenberg",
+		"url": "https://pudding.cool/author/the-pudding-team",
+		"twitterHandle": ""
+	},
+	"author3": {
+		"name": "Amber Thomas",
+		"url": "https://pudding.cool/author/the-pudding-team",
+		"twitterHandle": ""
 	},
 	"analytics": "",
 	"lorem": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis mollis neque sit amet sollicitudin vehicula. Maecenas fringilla mi non lacus mattis elementum. Curabitur dignissim faucibus justo."
