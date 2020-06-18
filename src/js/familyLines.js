@@ -129,8 +129,8 @@ function setup() {
   $context = $canvas.node().getContext('2d');
 
   // scales
-  scaleX_line.range([margin.left, margin.left + familyLines_width]);
-  scaleY_line.range([height + margin.top, margin.top]);
+  scaleX_line.range([(margin.left * DPR), (margin.left * DPR) + familyLines_width]);
+  scaleY_line.range([height + (margin.top * DPR), (margin.top * DPR)]);
 
   scaleX_hist.range([0, familyHist_width/DPR]);
   scaleY_hist.range([height/DPR, 0]);
@@ -207,8 +207,8 @@ function resize() {
   }
 
   // update scales
-  scaleX_line.range([margin.left, margin.left + familyLines_width]);
-  scaleY_line.range([height + margin.top, margin.top]);
+  scaleX_line.range([(margin.left * DPR), (margin.left * DPR) + familyLines_width]);
+  scaleY_line.range([height + (margin.top * DPR), (margin.top * DPR)]);
 
   scaleX_hist.range([0, familyHist_width/DPR]);
   scaleY_hist.range([height/DPR, 0]);
@@ -375,37 +375,37 @@ function addQuintileBackground() {
   $context_bg.fillStyle = '#828282';
   $context_bg.textAlign = 'end';
   $context_bg.textBaseline = 'bottom';
-  $context_bg.fillText('Higher', 42, margin.top + 20);
-  $context_bg.fillText('income', 42, margin.top + 34);
-  $context_bg.fillText('Lower', 42, margin.top + height - 24);
-  $context_bg.fillText('income', 42, margin.top + height - 10);
+  $context_bg.fillText('Higher', 42, (margin.top * DPR) + 20);
+  $context_bg.fillText('income', 42, (margin.top * DPR) + 34);
+  $context_bg.fillText('Lower', 42, (margin.top * DPR) + height - 24);
+  $context_bg.fillText('income', 42, (margin.top * DPR) + height - 10);
 
   // draw arrows
   $context_bg.beginPath();
-  $context_bg.moveTo(37, margin.top);
-  $context_bg.lineTo(42, margin.top + 5);
-  $context_bg.lineTo(32, margin.top + 5);
+  $context_bg.moveTo(37, (margin.top * DPR));
+  $context_bg.lineTo(42, (margin.top * DPR) + 5);
+  $context_bg.lineTo(32, (margin.top * DPR) + 5);
   $context_bg.fill();
 
   $context_bg.beginPath();
-  $context_bg.moveTo(37, margin.top + height);
-  $context_bg.lineTo(42, margin.top + height - 5);
-  $context_bg.lineTo(32, margin.top + height - 5);
+  $context_bg.moveTo(37, (margin.top * DPR) + height);
+  $context_bg.lineTo(42, (margin.top * DPR) + height - 5);
+  $context_bg.lineTo(32, (margin.top * DPR) + height - 5);
   $context_bg.fill();
 
   // x-axis labels
   $context_bg.textAlign = 'start';
   $context_bg.fillText(
     'Income in first year',
-    margin.left,
-    margin.top + height + margin.bottom - 2
+    (margin.left * DPR),
+    (margin.top * DPR) + height + (margin.bottom * DPR) - 2
   );
 
   $context_bg.textAlign = 'end';
   $context_bg.fillText(
     'Income in last year',
-    margin.left + familyLines_width,
-    margin.top + height + margin.bottom - 2
+    (margin.left * DPR) + familyLines_width,
+    (margin.top * DPR) + height + (margin.bottom * DPR) - 2
   );
 
   // $context.beginPath();
@@ -430,7 +430,7 @@ function addQuintileBackground() {
 
   quintileNames.forEach((d, i) => {
     const $gradient = $context_bg.createLinearGradient(
-      margin.left,
+      (margin.left * DPR),
       0,
       $canvas_bg.attr('width'),
       0
@@ -439,7 +439,7 @@ function addQuintileBackground() {
     $gradient.addColorStop(1, colorScale(d));
     $context_bg.fillStyle = $gradient;
     $context_bg.fillRect(
-      margin.left,
+      (margin.left * DPR),
       scaleY_line((i + 1) * 20),
       familyLines_width,
       height / 5
@@ -449,7 +449,7 @@ function addQuintileBackground() {
   const axisImage = new Image();
   axisImage.src = 'assets/images/familyLines_yAxis.png';
   axisImage.onload = function() {
-    $context_bg.drawImage(axisImage, 50, margin.top, height * 0.1, height);
+    $context_bg.drawImage(axisImage, 50, (margin.top * DPR), height * 0.1, height);
   };
 }
 
