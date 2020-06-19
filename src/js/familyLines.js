@@ -325,8 +325,8 @@ function drawFirstLine() {
 function animateLines() {
   tweenTimer.stop(); // make sure first line animation stops in case user navigates off the page
 
-  if (fam_num < totalLines) {
-  // if(fam_num < 100) {
+  // if (fam_num < totalLines) {
+  if(fam_num < 100) {
     if (fam_num < maxLines) {
       animate(dataByFamily, fam_num, ms_slow);
       timer = setTimeout(animateLines, ms_slow);
@@ -371,7 +371,7 @@ function addQuintileBackground() {
   // shades the part of the plot that corresponds to each quintile with that quintile's color
 
   // y-axis labels
-  $context_bg.font = `$(16 * DPR)px National 2 Narrow Web`;
+  $context_bg.font = `${16 * DPR}px National 2 Narrow Web`;
   $context_bg.fillStyle = '#828282';
   $context_bg.textAlign = 'end';
   $context_bg.textBaseline = 'bottom';
@@ -619,7 +619,7 @@ function snapToNearestPoint(value) {
   // needed to improve sharpness of lines in canvas
   return Math.round(value);
 }
-
+/*
 function wrap(text, width) {
   text.each(function() {
     const text = d3.select(this);
@@ -656,7 +656,7 @@ function wrap(text, width) {
     }
   });
 }
-
+*/
 function init() {
   setup();
 
