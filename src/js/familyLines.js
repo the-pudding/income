@@ -115,6 +115,41 @@ const histData_white = [
   { quintile: 'Upper Middle', n: 28805 },
   { quintile: 'Upper', n: 23702 },
 ];
+const histData_black = [
+  { quintile: 'Lower', n: 12439 },
+  { quintile: 'Lower Middle', n: 14583 },
+  { quintile: 'Middle', n: 13305 },
+  { quintile: 'Upper Middle', n: 9156 },
+  { quintile: 'Upper', n: 3963 },
+];
+const histData_latino = [
+  { quintile: 'Lower', n: 807 },
+  { quintile: 'Lower Middle', n: 1444 },
+  { quintile: 'Middle', n: 1581 },
+  { quintile: 'Upper Middle', n: 1134 },
+  { quintile: 'Upper', n: 661 },
+];
+const histData_asian = [
+  { quintile: 'Lower', n: 55 },
+  { quintile: 'Lower Middle', n: 124 },
+  { quintile: 'Middle', n: 199 },
+  { quintile: 'Upper Middle', n: 167 },
+  { quintile: 'Upper', n: 219 },
+];
+const histData_multi = [
+  { quintile: 'Lower', n: 418 },
+  { quintile: 'Lower Middle', n: 615 },
+  { quintile: 'Middle', n: 918 },
+  { quintile: 'Upper Middle', n: 851 },
+  { quintile: 'Upper', n: 578 },
+];
+const histData_native = [
+  { quintile: 'Lower', n: 88 },
+  { quintile: 'Lower Middle', n: 95 },
+  { quintile: 'Middle', n: 114 },
+  { quintile: 'Upper Middle', n: 97 },
+  { quintile: 'Upper', n: 55 },
+];
 
 function setup() {
   // dimensions
@@ -175,6 +210,11 @@ function setup() {
 
   drawHistogram($familyHist__svg, histData, familyHist_width, height, scaleX_hist, scaleY_hist, false);
   drawHistogram($familyHist_white__svg, histData_white, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
+  drawHistogram($familyHist_black__svg, histData_black, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
+  drawHistogram($familyHist_latino__svg, histData_latino, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
+  drawHistogram($familyHist_asian__svg, histData_asian, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
+  drawHistogram($familyHist_multi__svg, histData_multi, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
+  drawHistogram($familyHist_native__svg, histData_native, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
 }
 
 function drawHistogram(svg, data, width, height, xScale, yScale, isSmallMultiple) {
@@ -364,8 +404,8 @@ function drawFirstLine() {
 function animateLines() {
   tweenTimer.stop(); // make sure first line animation stops in case user navigates off the page
 
-  // if (fam_num < totalLines) {
-  if(fam_num < 100) {
+  if (fam_num < totalLines) {
+  // if(fam_num < 100) {
     if (fam_num < maxLines) {
       animate(dataByFamily, fam_num, ms_slow);
       timer = setTimeout(animateLines, ms_slow);
