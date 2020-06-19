@@ -5,6 +5,13 @@ const $section = d3.select('.familyLines');
 const $family__container = $section.select('.family__figure');
 const $canvas__container = $family__container.select('.canvasContainer');
 const $familyHist__svg = $family__container.select('svg.familyBars_svg');
+const $family_smallMultiples__container = $section.select('.family_smallMultiples__figure');
+const $familyHist_white__svg = $family_smallMultiples__container.select('svg.familyBars_white_svg');
+const $familyHist_black__svg = $family_smallMultiples__container.select('svg.familyBars_black_svg');
+const $familyHist_latino__svg = $family_smallMultiples__container.select('svg.familyBars_latino_svg');
+const $familyHist_asian__svg = $family_smallMultiples__container.select('svg.familyBars_asian_svg');
+const $familyHist_multi__svg = $family_smallMultiples__container.select('svg.familyBars_multi_svg');
+const $familyHist_native__svg = $family_smallMultiples__container.select('svg.familyBars_native_svg');
 
 const $replay__btn = $section.select('.replay');
 const $skipToEnd__btn = $section.select('.skipToEnd');
@@ -144,6 +151,7 @@ function setup() {
     .context($context);
 
   drawHistogram($familyHist__svg, histData);
+  drawHistogram($familyHist_white__svg, histData);
 }
 
 function drawHistogram(svg, data) {
@@ -464,14 +472,15 @@ function updateHistogram(data, time) {
   updateHistScaleX();
 
   // update histogram bars and labels
-  $bar_group.data(histData);
+  let bar_group = $familyHist__svg.selectAll('.bar_group');
+  bar_group.data(histData);
 
-  $bars
+  bar_group.selectAll('.bar')
     .transition()
     .duration(time)
     .attr('width', d => scaleX_hist(d.n));
 
-  $bar_labels
+  bar_group.selectAll('.label')
     .transition()
     .duration(time)
     .attr('x', d => scaleX_hist(d.n) + 5)
@@ -559,16 +568,16 @@ function replay() {
   //   .selectAll('.axis.axis--x')
   //   .transition()
   //   .call(d3.axisBottom(scaleX_hist).tickValues([0, 20]));
+  let bar_group = $familyHist__svg.selectAll('.bar_group');
+  bar_group.data(histData);
 
-  $bar_group.data(histData);
-
-  $bar_group
+  bar_group
     .select('.bar')
     .transition()
     .duration(500)
     .attr('width', d => scaleX_hist(d.n));
 
-  $bar_group
+  bar_group
     .select('.label')
     .transition()
     .duration(500)
@@ -601,15 +610,16 @@ function showEnd(countsArray) {
   //   .transition()
   //   .call(d3.axisBottom(scaleX_hist).tickValues(scaleX_hist.domain()));
 
-  $bar_group.data(countsArray);
+  let bar_group = $familyHist__svg.selectAll('.bar_group');
+  bar_group.data(countsArray);
 
-  $bar_group
+  bar_group
     .select('.bar')
     .transition()
     .duration(500)
     .attr('width', d => scaleX_hist(d.n));
 
-  $bar_group
+  bar_group
     .select('.label')
     .transition()
     .duration(500)
