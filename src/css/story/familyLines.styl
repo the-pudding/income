@@ -18,27 +18,32 @@
 				position absolute
 				top 0
 				left 0
-		svg
-			width 100%
-			text
-				font-family $sans
-				font-size 14px
-				fill #828282
-			.axis
-				path, line
-					stroke none
-		.line
-			stroke #000
-			stroke-width 1px
-			fill none
-			shape-rendering crispEdges
-		.quintileLabel
-			text-anchor end
-		.label
+	.family_smallMultiples__figure
+		display grid
+		columns 3
+		grid-template-columns 1fr 1fr 1fr
+		grid-gap 2%
+	svg
+		width 100%
+		text
 			font-family $sans
-			font-size 0.8em
-			font-weight 700
-			fill #282828
+			font-size 14px
+			fill #828282
+		.axis
+			path, line
+				stroke none
+	.line
+		stroke #000
+		stroke-width 1px
+		fill none
+		shape-rendering crispEdges
+	.quintileLabel
+		text-anchor end
+	.label
+		font-family $sans
+		font-size 0.8em
+		font-weight 700
+		fill #282828
 
 @media screen and (max-width: 649px)
 	.familyLines

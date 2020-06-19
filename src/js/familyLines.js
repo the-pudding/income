@@ -22,7 +22,9 @@ const margin = { top: 40, bottom: 24, left: 114, right: 5 };
 const margin_hist = { left: 10, right: 55 };
 let familyLines_width = 0;
 let familyHist_width = 0;
+let familyHist_sm_width = 0;
 let height = 0;
+let height_sm = 0;
 
 let $canvas_bg;
 let $context_bg;
@@ -66,6 +68,9 @@ const scaleX_hist = d3
   .scaleLinear()
   .domain([0, 20]);
 
+const scaleX_hist_sm = d3
+  .scaleLinear();
+
 const scaleX_hist_breakpoints = [
   100,
   500,
@@ -79,6 +84,10 @@ const scaleX_hist_breakpoints = [
 let scaleX_hist_breakpoints_copy = scaleX_hist_breakpoints.slice();
 
 const scaleY_hist = d3
+  .scaleBand()
+  .domain(quintileNames);
+
+const scaleY_hist_sm = d3
   .scaleBand()
   .domain(quintileNames);
 
@@ -99,6 +108,13 @@ let histData = [
   { quintile: 'Upper Middle', n: 0 },
   { quintile: 'Upper', n: 0 },
 ];
+const histData_white = [
+  { quintile: 'Lower', n: 9109 },
+  { quintile: 'Lower Middle', n: 17855 },
+  { quintile: 'Middle', n: 26135 },
+  { quintile: 'Upper Middle', n: 28805 },
+  { quintile: 'Upper', n: 23702 },
+];
 
 function setup() {
   // dimensions
@@ -112,7 +128,12 @@ function setup() {
       margin_hist.left -
       margin_hist.right) *
     DPR;
+  familyHist_sm_width =
+    ($familyHist_white__svg.node().getBoundingClientRect().width -
+      margin_hist.left -
+      margin_hist.right);
   height = (($family__container.node().getBoundingClientRect().width * 0.81) - margin.top - margin.bottom) * DPR;
+  height_sm = familyHist_sm_width * 1.5;
 
   // set up canvases - one for the background, one for the line
   $canvas_bg = $canvas__container
@@ -140,7 +161,9 @@ function setup() {
   scaleY_line.range([height + (margin.top * DPR), (margin.top * DPR)]);
 
   scaleX_hist.range([0, familyHist_width/DPR]);
+  scaleX_hist_sm.range([0, familyHist_sm_width]);
   scaleY_hist.range([height/DPR, 0]);
+  scaleY_hist_sm.range([height_sm, 0]);
 
   // line generator
   line = d3
@@ -150,13 +173,18 @@ function setup() {
     .curve(d3.curveStepAfter)
     .context($context);
 
-  drawHistogram($familyHist__svg, histData);
-  drawHistogram($familyHist_white__svg, histData);
+  drawHistogram($familyHist__svg, histData, familyHist_width, height, scaleX_hist, scaleY_hist, false);
+  drawHistogram($familyHist_white__svg, histData_white, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
 }
 
-function drawHistogram(svg, data) {
+function drawHistogram(svg, data, width, height, xScale, yScale, isSmallMultiple) {
+  // set the xScale domain for each race small multiple individually
+  if(isSmallMultiple) {
+    xScale.domain([0, d3.max(data, d => d.n)]);
+  }
+
   $familyHist__vis = svg
-    .attr('width', (familyHist_width / DPR) + margin_hist.left + margin_hist.right)
+    .attr('width', (width / DPR) + margin_hist.left + margin_hist.right)
     .attr('height', (height / DPR) + margin.top + margin.bottom)
     .append('g')
     .attr('transform', `translate(${margin_hist.left},${margin.top})`);
@@ -172,16 +200,16 @@ function drawHistogram(svg, data) {
     .append('rect')
     .attr('class', 'bar')
     .attr('x', 0)
-    .attr('y', d => scaleY_hist(d.quintile))
-    .attr('width', d => scaleX_hist(d.n))
-    .attr('height', scaleY_hist.bandwidth())
+    .attr('y', d => yScale(d.quintile))
+    .attr('width', d => xScale(d.n))
+    .attr('height', yScale.bandwidth())
     .style('fill', d => colorScale(d.quintile));
 
   $bar_labels = $bar_group
     .append('text')
     .attr('class', 'label')
-    .attr('x', 5)
-    .attr('y', d => scaleY_hist(d.quintile) + scaleY_hist.bandwidth() / 2)
+    .attr('x', d => isSmallMultiple ? xScale(d.n) + 5 : 5)
+    .attr('y', d => yScale(d.quintile) + yScale.bandwidth() / 2)
     .attr('dy', '.5em')
     .text(d => commaFmt(d.n));
 
