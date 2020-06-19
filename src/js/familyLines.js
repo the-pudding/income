@@ -143,8 +143,11 @@ function setup() {
     .curve(d3.curveStepAfter)
     .context($context);
 
-  // set up histogram
-  $familyHist__vis = $familyHist__svg
+  drawHistogram($familyHist__svg, histData);
+}
+
+function drawHistogram(svg, data) {
+  $familyHist__vis = svg
     .attr('width', (familyHist_width / DPR) + margin_hist.left + margin_hist.right)
     .attr('height', (height / DPR) + margin.top + margin.bottom)
     .append('g')
@@ -152,7 +155,7 @@ function setup() {
 
   $bar_group = $familyHist__vis
     .selectAll('.bar_group')
-    .data(histData)
+    .data(data)
     .enter()
     .append('g')
     .attr('class', 'bar_group');
@@ -174,13 +177,13 @@ function setup() {
     .attr('dy', '.5em')
     .text(d => commaFmt(d.n));
 
-  $familyHist__svg
+  svg
     .append('text')
     .attr('x', margin_hist.left)
     .attr('y', '1em')
     .text('Years in Each Quintile');
 
-  $familyHist__svg
+  svg
     .append('text')
     .attr('x', margin_hist.left)
     .attr('y', '2.3em')
