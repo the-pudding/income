@@ -9,12 +9,30 @@
 	{{#each doc.postHist}}
 	<p class='prose'>{{{value}}}</p>
 	{{/each}}
-	<figure class='family_smallMultiples__figure'>
-		<svg class='familyBars_white_svg'></svg>
-		<svg class='familyBars_black_svg'></svg>
-		<svg class='familyBars_latino_svg'></svg>
-		<svg class='familyBars_asian_svg'></svg>
-		<svg class='familyBars_multi_svg'></svg>
-		<svg class='familyBars_native_svg'></svg>
-	</figure>
+	<div class='family_smallMultiples__figure'>
+		<figure class='familyBars white'>
+			<h4>White families</h4>
+			<svg class='familyBars_white_svg'></svg>
+		</figure>
+		<figure class='familyBars black'>
+			<h4>Black families</h4>
+			<svg class='familyBars_black_svg'></svg>
+		</figure>
+		<figure class='familyBars latino'>
+			<h4>Latino families</h4>
+			<svg class='familyBars_latino_svg'></svg>
+		</figure>
+		<figure class='familyBars asian'>
+			<h4>Asian families</h4>
+			<svg class='familyBars_asian_svg'></svg>
+		</figure>
+		<figure class='familyBars multi'>
+			<h4>Multiracial families</h4>
+			<svg class='familyBars_multi_svg'></svg>
+		</figure>
+		<figure class='familyBars native'>
+			<h4>Native American families</h4>
+			<svg class='familyBars_native_svg'></svg>
+		</figure>
+	</div>
 </section>

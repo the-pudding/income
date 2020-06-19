@@ -19,7 +19,7 @@ const $skipToEnd__btn = $section.select('.skipToEnd');
 // dimensions
 const DPR = window.devicePixelRatio ? Math.min(window.devicePixelRatio, 2) : 1;
 const margin = { top: 40, bottom: 24, left: 114, right: 5 };
-const margin_hist = { left: 10, right: 55 };
+const margin_hist = { left: 0, right: 55 };
 let familyLines_width = 0;
 let familyHist_width = 0;
 let familyHist_sm_width = 0;
