@@ -450,7 +450,7 @@ function addQuintileBackground() {
   // shades the part of the plot that corresponds to each quintile with that quintile's color
 
   // y-axis labels
-  $context_bg.font = `${16 * DPR}px National 2 Narrow Web`;
+  $context_bg.font = `${14 * DPR}px "National 2 Narrow Web"`;
   $context_bg.fillStyle = '#828282';
   $context_bg.textAlign = 'end';
   $context_bg.textBaseline = 'bottom';
