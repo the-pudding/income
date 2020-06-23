@@ -208,7 +208,7 @@ function setup() {
     .curve(d3.curveStepAfter)
     .context($context);
 
-  drawHistogram($familyHist__svg, histData, familyHist_width, height, scaleX_hist, scaleY_hist, false);
+  drawHistogram($familyHist__svg, histData, (familyHist_width / DPR), (height / DPR), scaleX_hist, scaleY_hist, false);
   drawHistogram($familyHist_white__svg, histData_white, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
   drawHistogram($familyHist_black__svg, histData_black, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
   drawHistogram($familyHist_latino__svg, histData_latino, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
@@ -224,8 +224,8 @@ function drawHistogram(svg, data, width, height, xScale, yScale, isSmallMultiple
   }
 
   $familyHist__vis = svg
-    .attr('width', (width / DPR) + margin_hist.left + margin_hist.right)
-    .attr('height', (height / DPR) + margin.top + margin.bottom)
+    .attr('width', width + margin_hist.left + margin_hist.right)
+    .attr('height', height + margin.top + margin.bottom)
     .append('g')
     .attr('transform', `translate(${margin_hist.left},${margin.top})`);
 
