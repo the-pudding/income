@@ -10,8 +10,10 @@
 		display grid
 		columns 2
 		grid-template-columns 69% 29%
-		grid-gap 2%
+		grid-gap 2vw
 		margin-bottom 10%
+		height 55vh
+		max-height 526px
 		.canvasContainer
 			position relative
 			canvas
@@ -22,8 +24,10 @@
 		display grid
 		columns 3
 		grid-template-columns 1fr 1fr 1fr
-		grid-gap 10%
+		grid-gap 2vw
 		margin-top 3rem
+		// height 75vh
+		// max-height 760px
 	h4
 		font-family $sans
 		margin-bottom 1em
@@ -61,3 +65,10 @@
 			columns 1
 			grid-template-columns 100%
 			grid-template-rows 30vh 30vh
+			grid-gap 5vw
+			height auto
+			max-height none
+		.family_smallMultiples__figure
+			columns 2
+			grid-template-columns 1fr 1fr
+			grid-gap 5vw

@@ -167,8 +167,8 @@ function setup() {
     ($familyHist_white__svg.node().getBoundingClientRect().width -
       margin_hist.left -
       margin_hist.right);
-  height = (($family__container.node().getBoundingClientRect().width * 0.81) - margin.top - margin.bottom) * DPR;
-  height_sm = familyHist_sm_width * 1.5;
+  height = (($canvas__container.node().getBoundingClientRect().height) - margin.top - margin.bottom) * DPR;
+  height_sm = familyHist_sm_width * 1.7 - margin.top - margin.bottom;
 
   // set up canvases - one for the background, one for the line
   $canvas_bg = $canvas__container
