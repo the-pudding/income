@@ -454,22 +454,56 @@ function addQuintileBackground() {
   $context_bg.fillStyle = '#828282';
   $context_bg.textAlign = 'end';
   $context_bg.textBaseline = 'bottom';
-  $context_bg.fillText('Higher', 42, (margin.top * DPR) + 20);
-  $context_bg.fillText('income', 42, (margin.top * DPR) + 34);
-  $context_bg.fillText('Lower', 42, (margin.top * DPR) + height - 24);
-  $context_bg.fillText('income', 42, (margin.top * DPR) + height - 10);
+  $context_bg.fillText(
+    'Higher',
+    (42 * DPR),
+    (margin.top + 23) * DPR
+  );
+  $context_bg.fillText(
+    'income',
+    (42 * DPR),
+    (margin.top + 37) * DPR
+  );
+  $context_bg.fillText(
+    'Lower',
+    (42 * DPR),
+    ((margin.top - 24) * DPR) + height
+  );
+  $context_bg.fillText(
+    'income',
+    (42 * DPR),
+    ((margin.top - 10) * DPR) + height
+  );
 
   // draw arrows
   $context_bg.beginPath();
-  $context_bg.moveTo(37, (margin.top * DPR));
-  $context_bg.lineTo(42, (margin.top * DPR) + 5);
-  $context_bg.lineTo(32, (margin.top * DPR) + 5);
+  $context_bg.moveTo(
+    (37 * DPR),
+    (margin.top * DPR)
+  );
+  $context_bg.lineTo(
+    (42 * DPR),
+    (margin.top + 5) * DPR
+  );
+  $context_bg.lineTo(
+    (32 * DPR),
+    (margin.top + 5) * DPR
+  );
   $context_bg.fill();
 
   $context_bg.beginPath();
-  $context_bg.moveTo(37, (margin.top * DPR) + height);
-  $context_bg.lineTo(42, (margin.top * DPR) + height - 5);
-  $context_bg.lineTo(32, (margin.top * DPR) + height - 5);
+  $context_bg.moveTo(
+    (37 * DPR),
+    (margin.top * DPR) + height
+  );
+  $context_bg.lineTo(
+    (42 * DPR),
+    ((margin.top - 5) * DPR) + height
+  );
+  $context_bg.lineTo(
+    (32 * DPR),
+    ((margin.top - 5) * DPR) + height
+  );
   $context_bg.fill();
 
   // x-axis labels
@@ -528,7 +562,12 @@ function addQuintileBackground() {
   const axisImage = new Image();
   axisImage.src = 'assets/images/familyLines_yAxis.png';
   axisImage.onload = function() {
-    $context_bg.drawImage(axisImage, 50, (margin.top * DPR), height * 0.1, height);
+    $context_bg.drawImage(
+      axisImage,
+      50,
+      (margin.top * DPR),
+      height * 0.1, height
+    );
   };
 }
 
