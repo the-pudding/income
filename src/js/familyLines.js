@@ -564,7 +564,7 @@ function addQuintileBackground() {
   axisImage.onload = function() {
     $context_bg.drawImage(
       axisImage,
-      50,
+      (50 * DPR),
       (margin.top * DPR),
       height * 0.1, height
     );
