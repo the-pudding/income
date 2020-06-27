@@ -278,12 +278,13 @@ function resize() {
       margin_hist.left -
       margin_hist.right) *
     DPR;
-  // if($canvas__container.node().getBoundingClientRect().width <= 430) {
-    height = ($canvas__container.node().getBoundingClientRect().height - margin.top - margin.bottom) * DPR;
-  // }
-  // else {
-    // height = (($family__container.node().getBoundingClientRect().width * 0.81) - margin.top - margin.bottom) * DPR;
-  // }
+  familyHist_sm_width =
+    ($familyHist_white__svg.node().getBoundingClientRect().width -
+      margin_hist.left -
+      margin_hist.right);
+  height = ($canvas__container.node().getBoundingClientRect().height - margin.top - margin.bottom) * DPR;
+  height_sm = familyHist_sm_width * 1.7 - margin.top - margin.bottom;
+
 
   // update scales
   scaleX_line.range([(margin.left * DPR), (margin.left * DPR) + familyLines_width]);
@@ -291,6 +292,9 @@ function resize() {
 
   scaleX_hist.range([0, familyHist_width/DPR]);
   scaleY_hist.range([height/DPR, 0]);
+
+  scaleX_hist_sm.range([0, familyHist_sm_width]);
+  scaleY_hist_sm.range([height_sm, 0]);
 
   // line generator
   line = d3
@@ -313,37 +317,43 @@ function resize() {
     .style('width', `${(familyLines_width / DPR) + margin.left + margin.right}px`)
     .style('height', `${(height / DPR) + margin.top + margin.bottom}px`);
 
-  $familyHist__vis
-    .attr('width', (familyHist_width / DPR) + margin_hist.left + margin_hist.right)
-    .attr('height', (height / DPR) + margin.top + margin.bottom);
-
   // clear current background canvas and redraw with new dimensions
   $context_bg.clearRect(0, 0, $canvas_bg.attr('width'), $canvas_bg.attr('height'));
   addQuintileBackground();
 
-  // update bar lengths and label placements in histogram
-  // $bars
-  //   .attr('y', d => scaleY_hist(d.quintile))
-  //   .attr('width', d => scaleX_hist(d.n))
-  //   .attr('height', scaleY_hist.bandwidth());
+  // update bar lengths and label placements in histograms
+  resizeHistogram($familyHist__svg, histData, (familyHist_width / DPR), (height / DPR), scaleX_hist, scaleY_hist, false);
+  resizeHistogram($familyHist_white__svg, histData_white, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
+  resizeHistogram($familyHist_black__svg, histData_black, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
+  resizeHistogram($familyHist_latino__svg, histData_latino, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
+  resizeHistogram($familyHist_asian__svg, histData_asian, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
+  resizeHistogram($familyHist_multi__svg, histData_multi, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
+  resizeHistogram($familyHist_native__svg, histData_native, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
+}
 
-  // $bar_labels
-  //   .attr('x', d => scaleX_hist(d.n) + 5)
-  //   .attr('y', d => scaleY_hist(d.quintile) + scaleY_hist.bandwidth() / 2);
+function resizeHistogram(svg, data, width, height, xScale, yScale, isSmallMultiple) {
+  // set the xScale domain for each race small multiple individually
+  if(isSmallMultiple) {
+    xScale.domain([0, d3.max(data, d => d.n)]);
+  }
 
+  // resize svg container
+  let hist = svg
+    .attr('width', width + margin_hist.left + margin_hist.right)
+    .attr('height', height + margin.top + margin.bottom);
 
-  let bar_group = $familyHist__svg.selectAll('.bar_group');
+  let bar_group = hist.selectAll('.bar_group');
 
   bar_group
     .select('.bar')
-    .attr('y', d => scaleY_hist(d.quintile))
-    .attr('width', d => scaleX_hist(d.n))
-    .attr('height', scaleY_hist.bandwidth());
+    .attr('y', d => yScale(d.quintile))
+    .attr('width', d => xScale(d.n))
+    .attr('height', yScale.bandwidth());
 
   bar_group
     .select('.label')
-    .attr('x', d => scaleX_hist(d.n) + 5)
-    .attr('y', d => scaleY_hist(d.quintile) + scaleY_hist.bandwidth() / 2);
+    .attr('x', d => xScale(d.n) + 5)
+    .attr('y', d => yScale(d.quintile) + yScale.bandwidth() / 2);
 }
 
 function drawFirstLine() {
