@@ -278,12 +278,12 @@ function resize() {
       margin_hist.left -
       margin_hist.right) *
     DPR;
-  if($canvas__container.node().getBoundingClientRect().width <= 430) {
+  // if($canvas__container.node().getBoundingClientRect().width <= 430) {
     height = ($canvas__container.node().getBoundingClientRect().height - margin.top - margin.bottom) * DPR;
-  }
-  else {
-    height = (($family__container.node().getBoundingClientRect().width * 0.81) - margin.top - margin.bottom) * DPR;
-  }
+  // }
+  // else {
+    // height = (($family__container.node().getBoundingClientRect().width * 0.81) - margin.top - margin.bottom) * DPR;
+  // }
 
   // update scales
   scaleX_line.range([(margin.left * DPR), (margin.left * DPR) + familyLines_width]);
@@ -322,12 +322,26 @@ function resize() {
   addQuintileBackground();
 
   // update bar lengths and label placements in histogram
-  $bars
+  // $bars
+  //   .attr('y', d => scaleY_hist(d.quintile))
+  //   .attr('width', d => scaleX_hist(d.n))
+  //   .attr('height', scaleY_hist.bandwidth());
+
+  // $bar_labels
+  //   .attr('x', d => scaleX_hist(d.n) + 5)
+  //   .attr('y', d => scaleY_hist(d.quintile) + scaleY_hist.bandwidth() / 2);
+
+
+  let bar_group = $familyHist__svg.selectAll('.bar_group');
+
+  bar_group
+    .select('.bar')
     .attr('y', d => scaleY_hist(d.quintile))
     .attr('width', d => scaleX_hist(d.n))
     .attr('height', scaleY_hist.bandwidth());
 
-  $bar_labels
+  bar_group
+    .select('.label')
     .attr('x', d => scaleX_hist(d.n) + 5)
     .attr('y', d => scaleY_hist(d.quintile) + scaleY_hist.bandwidth() / 2);
 }
