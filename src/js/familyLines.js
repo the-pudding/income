@@ -608,11 +608,13 @@ function updateHistogram(data, time) {
 
   bar_group.selectAll('.bar')
     .transition()
+    .delay(time)
     .duration(time)
     .attr('width', d => scaleX_hist(d.n));
 
   bar_group.selectAll('.label')
     .transition()
+    .delay(time)
     .duration(time)
     .attr('x', d => scaleX_hist(d.n) + 5)
     .text(d => commaFmt(d.n));
