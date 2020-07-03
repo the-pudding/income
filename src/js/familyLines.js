@@ -69,7 +69,8 @@ const scaleX_hist = d3
   .domain([0, 20]);
 
 const scaleX_hist_sm = d3
-  .scaleLinear();
+  .scaleLinear()
+  .domain([0, 0.3]);
 
 const scaleX_hist_breakpoints = [
   100,
@@ -99,6 +100,7 @@ const colorScale = d3
 let line;
 
 const commaFmt = d3.format(',.0f');
+const pctFmt = d3.format('.0%');
 
 // initial data for the histogram
 let histData = [
@@ -109,46 +111,46 @@ let histData = [
   { quintile: 'Upper', n: 0 },
 ];
 const histData_white = [
-  { quintile: 'Lower', n: 9109 },
-  { quintile: 'Lower Middle', n: 17855 },
-  { quintile: 'Middle', n: 26135 },
-  { quintile: 'Upper Middle', n: 28805 },
-  { quintile: 'Upper', n: 23702 },
+  { quintile: 'Lower', n: 9109, pct: 0.08625457 },
+  { quintile: 'Lower Middle', n: 17855, pct: 0.16907183 },
+  { quintile: 'Middle', n: 26135, pct: 0.24747647 },
+  { quintile: 'Upper Middle', n: 28805, pct: 0.27275912 },
+  { quintile: 'Upper', n: 23702, pct: 0.22443801 },
 ];
 const histData_black = [
-  { quintile: 'Lower', n: 12439 },
-  { quintile: 'Lower Middle', n: 14583 },
-  { quintile: 'Middle', n: 13305 },
-  { quintile: 'Upper Middle', n: 9156 },
-  { quintile: 'Upper', n: 3963 },
+  { quintile: 'Lower', n: 12439, pct: 0.23273959 },
+  { quintile: 'Lower Middle', n: 14583, pct: 0.27285484 },
+  { quintile: 'Middle', n: 13305, pct: 0.24894286 },
+  { quintile: 'Upper Middle', n: 9156, pct: 0.17131310 },
+  { quintile: 'Upper', n: 3963, pct: 0.07414961 },
 ];
 const histData_latino = [
-  { quintile: 'Lower', n: 807 },
-  { quintile: 'Lower Middle', n: 1444 },
-  { quintile: 'Middle', n: 1581 },
-  { quintile: 'Upper Middle', n: 1134 },
-  { quintile: 'Upper', n: 661 },
+  { quintile: 'Lower', n: 807, pct: 0.1434157 },
+  { quintile: 'Lower Middle', n: 1444, pct: 0.2566199 },
+  { quintile: 'Middle', n: 1581, pct: 0.2809668 },
+  { quintile: 'Upper Middle', n: 1134, pct: 0.2015283 },
+  { quintile: 'Upper', n: 661, pct: 0.1174693 },
 ];
 const histData_asian = [
-  { quintile: 'Lower', n: 55 },
-  { quintile: 'Lower Middle', n: 124 },
-  { quintile: 'Middle', n: 199 },
-  { quintile: 'Upper Middle', n: 167 },
-  { quintile: 'Upper', n: 219 },
+  { quintile: 'Lower', n: 55, pct: 0.07198953 },
+  { quintile: 'Lower Middle', n: 124, pct: 0.16230366 },
+  { quintile: 'Middle', n: 199, pct: 0.26047120 },
+  { quintile: 'Upper Middle', n: 167, pct: 0.21858639 },
+  { quintile: 'Upper', n: 219, pct: 0.28664921 },
 ];
 const histData_multi = [
-  { quintile: 'Lower', n: 418 },
-  { quintile: 'Lower Middle', n: 615 },
-  { quintile: 'Middle', n: 918 },
-  { quintile: 'Upper Middle', n: 851 },
-  { quintile: 'Upper', n: 578 },
+  { quintile: 'Lower', n: 418, pct: 0.1236686 },
+  { quintile: 'Lower Middle', n: 615, pct: 0.1819527 },
+  { quintile: 'Middle', n: 918, pct: 0.2715976 },
+  { quintile: 'Upper Middle', n: 851, pct: 0.2517751 },
+  { quintile: 'Upper', n: 578, pct: 0.1710059 },
 ];
 const histData_native = [
-  { quintile: 'Lower', n: 88 },
-  { quintile: 'Lower Middle', n: 95 },
-  { quintile: 'Middle', n: 114 },
-  { quintile: 'Upper Middle', n: 97 },
-  { quintile: 'Upper', n: 55 },
+  { quintile: 'Lower', n: 88, pct: 0.1959911 },
+  { quintile: 'Lower Middle', n: 95, pct: 0.2115813 },
+  { quintile: 'Middle', n: 114, pct: 0.2538976 },
+  { quintile: 'Upper Middle', n: 97, pct: 0.2160356 },
+  { quintile: 'Upper', n: 55, pct: 0.1224944 },
 ];
 
 function setup() {
@@ -219,9 +221,9 @@ function setup() {
 
 function drawHistogram(svg, data, width, height, xScale, yScale, isSmallMultiple) {
   // set the xScale domain for each race small multiple individually
-  if(isSmallMultiple) {
-    xScale.domain([0, d3.max(data, d => d.n)]);
-  }
+  // if(isSmallMultiple) {
+  //   xScale.domain([0, d3.max(data, d => d.n)]);
+  // }
 
   $familyHist__vis = svg
     .attr('width', width + margin_hist.left + margin_hist.right)
@@ -241,17 +243,17 @@ function drawHistogram(svg, data, width, height, xScale, yScale, isSmallMultiple
     .attr('class', 'bar')
     .attr('x', 0)
     .attr('y', d => yScale(d.quintile))
-    .attr('width', d => xScale(d.n))
+    .attr('width', d => isSmallMultiple ? xScale(d.pct) : xScale(d.n))
     .attr('height', yScale.bandwidth())
     .style('fill', d => colorScale(d.quintile));
 
   $bar_labels = $bar_group
     .append('text')
     .attr('class', 'label')
-    .attr('x', d => isSmallMultiple ? xScale(d.n) + 5 : 5)
+    .attr('x', d => isSmallMultiple ? xScale(d.pct) + 5 : 5)
     .attr('y', d => yScale(d.quintile) + yScale.bandwidth() / 2)
     .attr('dy', '.5em')
-    .text(d => commaFmt(d.n));
+    .text(d => isSmallMultiple ? pctFmt(d.pct) : commaFmt(d.n));
 
   svg
     .append('text')
@@ -333,9 +335,9 @@ function resize() {
 
 function resizeHistogram(svg, data, width, height, xScale, yScale, isSmallMultiple) {
   // set the xScale domain for each race small multiple individually
-  if(isSmallMultiple) {
-    xScale.domain([0, d3.max(data, d => d.n)]);
-  }
+  // if(isSmallMultiple) {
+  //   xScale.domain([0, d3.max(data, d => d.n)]);
+  // }
 
   // resize svg container
   let hist = svg
@@ -347,12 +349,12 @@ function resizeHistogram(svg, data, width, height, xScale, yScale, isSmallMultip
   bar_group
     .select('.bar')
     .attr('y', d => yScale(d.quintile))
-    .attr('width', d => xScale(d.n))
+    .attr('width', d => isSmallMultiple ? xScale(d.pct) : xScale(d.n))
     .attr('height', yScale.bandwidth());
 
   bar_group
     .select('.label')
-    .attr('x', d => xScale(d.n) + 5)
+    .attr('x', d => isSmallMultiple ? xScale(d.pct) + 5 : xScale(d.n) + 5)
     .attr('y', d => yScale(d.quintile) + yScale.bandwidth() / 2);
 }
 
