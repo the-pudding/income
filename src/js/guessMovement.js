@@ -256,8 +256,31 @@ function updateWarningMsg() {
 }
 
 function updateInterpretText() {
-	// need some scenarios and ways to calculate which one applies based on the current state of the graph
-	$interpretText.text('According to you, roughly equal numbers of families move a lot as do those that move a little.');
+	// figure out which scenario the user has selected and display appropriate message
+	let interpretation = '';
+
+	// scenario 1: most families don't move or move very little (bars 0 and 1 > 50%)
+	if(guessData[0].share + guessData[1].share > 50) {
+		interpretation = "According to you, most families don't move or move very little.";
+	}
+	// scenario 2: most families move a lot (bars 3 and 4 > 50%)
+	else if(guessData[3].share + guessData[4].share > 50) {
+		interpretation = "According to you, most families move a lot.";
+	}
+	// scenario 3: some families move very little, some move a lot (bars at the ends are tall while middle bars are short)
+	else if(guessData[2].share < 20) {
+		interpretation = "According to you, some families move very little while others move a lot.";
+	}
+	// scenario 4: most families move a moderate amount (bar 2 > 50%)
+	else if(guessData[2].share > 50) {
+		interpretation = "According to you, most families move a moderate amount.";
+	}
+	// scenario 5 (default): roughly equal numbers move a lot as do those that move a little (all bars roughly equal height)
+	else {
+		interpretation = "According to you, roughly equal numbers of families move a lot as do those that move a little.";
+	}
+
+	$interpretText.text(interpretation);
 }
 
 // $submitBtn.on('click', showAnswer);
