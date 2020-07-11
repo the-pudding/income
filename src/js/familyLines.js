@@ -9,9 +9,9 @@ const $family_smallMultiples__container = $section.select('.family_smallMultiple
 const $familyHist_white__svg = $family_smallMultiples__container.select('svg.familyBars_white_svg');
 const $familyHist_black__svg = $family_smallMultiples__container.select('svg.familyBars_black_svg');
 const $familyHist_latino__svg = $family_smallMultiples__container.select('svg.familyBars_latino_svg');
-const $familyHist_asian__svg = $family_smallMultiples__container.select('svg.familyBars_asian_svg');
-const $familyHist_multi__svg = $family_smallMultiples__container.select('svg.familyBars_multi_svg');
-const $familyHist_native__svg = $family_smallMultiples__container.select('svg.familyBars_native_svg');
+// const $familyHist_asian__svg = $family_smallMultiples__container.select('svg.familyBars_asian_svg');
+// const $familyHist_multi__svg = $family_smallMultiples__container.select('svg.familyBars_multi_svg');
+// const $familyHist_native__svg = $family_smallMultiples__container.select('svg.familyBars_native_svg');
 
 const $replay__btn = $section.select('.replay');
 const $skipToEnd__btn = $section.select('.skipToEnd');
@@ -131,27 +131,27 @@ const histData_latino = [
   { quintile: 'Upper Middle', n: 1134, pct: 0.2015283 },
   { quintile: 'Upper', n: 661, pct: 0.1174693 },
 ];
-const histData_asian = [
-  { quintile: 'Lower', n: 55, pct: 0.07198953 },
-  { quintile: 'Lower Middle', n: 124, pct: 0.16230366 },
-  { quintile: 'Middle', n: 199, pct: 0.26047120 },
-  { quintile: 'Upper Middle', n: 167, pct: 0.21858639 },
-  { quintile: 'Upper', n: 219, pct: 0.28664921 },
-];
-const histData_multi = [
-  { quintile: 'Lower', n: 418, pct: 0.1236686 },
-  { quintile: 'Lower Middle', n: 615, pct: 0.1819527 },
-  { quintile: 'Middle', n: 918, pct: 0.2715976 },
-  { quintile: 'Upper Middle', n: 851, pct: 0.2517751 },
-  { quintile: 'Upper', n: 578, pct: 0.1710059 },
-];
-const histData_native = [
-  { quintile: 'Lower', n: 88, pct: 0.1959911 },
-  { quintile: 'Lower Middle', n: 95, pct: 0.2115813 },
-  { quintile: 'Middle', n: 114, pct: 0.2538976 },
-  { quintile: 'Upper Middle', n: 97, pct: 0.2160356 },
-  { quintile: 'Upper', n: 55, pct: 0.1224944 },
-];
+// const histData_asian = [
+//   { quintile: 'Lower', n: 55, pct: 0.07198953 },
+//   { quintile: 'Lower Middle', n: 124, pct: 0.16230366 },
+//   { quintile: 'Middle', n: 199, pct: 0.26047120 },
+//   { quintile: 'Upper Middle', n: 167, pct: 0.21858639 },
+//   { quintile: 'Upper', n: 219, pct: 0.28664921 },
+// ];
+// const histData_multi = [
+//   { quintile: 'Lower', n: 418, pct: 0.1236686 },
+//   { quintile: 'Lower Middle', n: 615, pct: 0.1819527 },
+//   { quintile: 'Middle', n: 918, pct: 0.2715976 },
+//   { quintile: 'Upper Middle', n: 851, pct: 0.2517751 },
+//   { quintile: 'Upper', n: 578, pct: 0.1710059 },
+// ];
+// const histData_native = [
+//   { quintile: 'Lower', n: 88, pct: 0.1959911 },
+//   { quintile: 'Lower Middle', n: 95, pct: 0.2115813 },
+//   { quintile: 'Middle', n: 114, pct: 0.2538976 },
+//   { quintile: 'Upper Middle', n: 97, pct: 0.2160356 },
+//   { quintile: 'Upper', n: 55, pct: 0.1224944 },
+// ];
 
 function setup() {
   // dimensions
@@ -214,9 +214,9 @@ function setup() {
   drawHistogram($familyHist_white__svg, histData_white, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
   drawHistogram($familyHist_black__svg, histData_black, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
   drawHistogram($familyHist_latino__svg, histData_latino, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
-  drawHistogram($familyHist_asian__svg, histData_asian, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
-  drawHistogram($familyHist_multi__svg, histData_multi, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
-  drawHistogram($familyHist_native__svg, histData_native, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
+  // drawHistogram($familyHist_asian__svg, histData_asian, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
+  // drawHistogram($familyHist_multi__svg, histData_multi, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
+  // drawHistogram($familyHist_native__svg, histData_native, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
 }
 
 function drawHistogram(svg, data, width, height, xScale, yScale, isSmallMultiple) {
@@ -328,9 +328,9 @@ function resize() {
   resizeHistogram($familyHist_white__svg, histData_white, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
   resizeHistogram($familyHist_black__svg, histData_black, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
   resizeHistogram($familyHist_latino__svg, histData_latino, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
-  resizeHistogram($familyHist_asian__svg, histData_asian, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
-  resizeHistogram($familyHist_multi__svg, histData_multi, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
-  resizeHistogram($familyHist_native__svg, histData_native, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
+  // resizeHistogram($familyHist_asian__svg, histData_asian, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
+  // resizeHistogram($familyHist_multi__svg, histData_multi, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
+  // resizeHistogram($familyHist_native__svg, histData_native, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
 }
 
 function resizeHistogram(svg, data, width, height, xScale, yScale, isSmallMultiple) {
