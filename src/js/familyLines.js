@@ -19,7 +19,7 @@ const $skipToEnd__btn = $section.select('.skipToEnd');
 // dimensions
 const DPR = window.devicePixelRatio ? Math.min(window.devicePixelRatio, 2) : 1;
 const margin = { top: 40, bottom: 24, left: 114, right: 5 };
-const margin_hist = { left: 0, right: 55 };
+const margin_hist = { left: 5, right: 55 };
 let familyLines_width = 0;
 let familyHist_width = 0;
 let familyHist_sm_width = 0;
@@ -255,6 +255,14 @@ function drawHistogram(svg, data, width, height, xScale, yScale, isSmallMultiple
     .attr('dy', '.5em')
     .text(d => isSmallMultiple ? pctFmt(d.pct) : commaFmt(d.n));
 
+  if(!isSmallMultiple) {
+    $familyHist__vis
+      .append('g')
+      .attr('class', 'axis axis--x')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(scaleX_hist).tickValues([0, 20]));
+  }
+
   svg
     .append('text')
     .attr('x', margin_hist.left)
@@ -356,6 +364,14 @@ function resizeHistogram(svg, data, width, height, xScale, yScale, isSmallMultip
     .select('.label')
     .attr('x', d => isSmallMultiple ? xScale(d.pct) + 5 : xScale(d.n) + 5)
     .attr('y', d => yScale(d.quintile) + yScale.bandwidth() / 2);
+
+  // resize the x-axis for the non-small multiple histogram
+  if(!isSmallMultiple) {
+      $familyHist__svg
+        .selectAll('.axis.axis--x')
+        .attr('transform', `translate(0,${height})`)
+        .call(d3.axisBottom(scaleX_hist).tickValues([0, scaleX_hist_breakpoints[0]]));
+  }
 }
 
 function drawFirstLine() {
@@ -631,10 +647,10 @@ function updateHistScaleX() {
     scaleX_hist.domain([0, scaleX_hist_breakpoints_copy[0]]);
     scaleX_hist_breakpoints_copy.shift();
 
-    // $familyHist__vis
-    //   .selectAll('.axis.axis--x')
-    //   .transition()
-    //   .call(d3.axisBottom(scaleX_hist).tickValues(scaleX_hist.domain()));
+    $familyHist__svg
+      .selectAll('.axis.axis--x')
+      .transition()
+      .call(d3.axisBottom(scaleX_hist).tickValues(scaleX_hist.domain()));
   }
 }
 
@@ -699,10 +715,11 @@ function replay() {
     { quintile: 'Upper', n: 0 },
   ];
 
-  // $familyHist__vis
-  //   .selectAll('.axis.axis--x')
-  //   .transition()
-  //   .call(d3.axisBottom(scaleX_hist).tickValues([0, 20]));
+  $familyHist__svg
+    .selectAll('.axis.axis--x')
+    .transition()
+    .call(d3.axisBottom(scaleX_hist).tickValues([0, 20]));
+
   let bar_group = $familyHist__svg.selectAll('.bar_group');
   bar_group.data(histData);
 
@@ -740,10 +757,10 @@ function showEnd(countsArray) {
     scaleX_hist_breakpoints[scaleX_hist_breakpoints.length - 1],
   ]);
 
-  // $familyHist__vis
-  //   .selectAll('.axis.axis--x')
-  //   .transition()
-  //   .call(d3.axisBottom(scaleX_hist).tickValues(scaleX_hist.domain()));
+  $familyHist__svg
+    .selectAll('.axis.axis--x')
+    .transition()
+    .call(d3.axisBottom(scaleX_hist).tickValues(scaleX_hist.domain()));
 
   let bar_group = $familyHist__svg.selectAll('.bar_group');
   bar_group.data(countsArray);
@@ -834,12 +851,6 @@ function init() {
       //  .call(d3.axisBottom(scaleX_line));
 
       addQuintileBackground();
-
-      // $familyHist__vis
-      //   .append('g')
-      //   .attr('class', 'axis axis--x')
-      //   .attr('transform', `translate(0,${height})`)
-      //   .call(d3.axisBottom(scaleX_hist).tickValues([0, 20]));
 
       const firstLineLength = dataByFamily[0].values.length;
 
