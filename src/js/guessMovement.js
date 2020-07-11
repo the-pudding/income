@@ -288,6 +288,12 @@ function updateInterpretText() {
 function showAnswer() {
 	$answer__vis.classed('noDisplay', false);
 
+	// transition bars to be dotted outlines
+	$guess__svg.selectAll('rect.selection')
+		.style('fill', 'none')
+		.style('stroke', '#124653')
+		.style('stroke-dasharray', '4');
+
 	// add overlay so user can't continue to drag bars
 	$guess__svg.append('rect')
 		.attr('x', margin.left)
