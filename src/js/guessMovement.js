@@ -21,11 +21,11 @@ const answerData = [{levels: 0, share: 0.6},
 					{levels: 3, share: 29.5},
 					{levels: 4, share: 14.5}];
 
-let guessData = [{levels: 0, share: 0},
-				 {levels: 1, share: 0},
-				 {levels: 2, share: 0},
-				 {levels: 3, share: 0},
-				 {levels: 4, share: 0}];
+let guessData = [{levels: 0, share: 10},
+				 {levels: 1, share: 10},
+				 {levels: 2, share: 10},
+				 {levels: 3, share: 10},
+				 {levels: 4, share: 10}];
 
 // dimensions
 const margin = {top: 20, bottom: 50, left: 46, right: 0};
