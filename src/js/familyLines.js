@@ -40,7 +40,7 @@ let $bar_labels;
 let timer;
 let tweenTimer;
 const maxLines = 10; // max number of lines that should appear on the chart at any given time
-const ms_slow = 1000; // how much time should elapse before the next line is drawn during the slow phase of the animation
+const ms_slow = 500; // how much time should elapse before the next line is drawn during the slow phase of the animation
 const ms_fast = 20; // how much time should elapse during the sped up phase of the animation
 // animation will take: (30 * 1000) + (10 * 1000) + ((7857-10) * 20) = 196,940 ms or 3.28 min to run
 let fam_num = 1;
