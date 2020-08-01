@@ -210,16 +210,16 @@ function setup() {
     .curve(d3.curveStepAfter)
     .context($context);
 
-  drawHistogram($familyHist__svg, histData, (familyHist_width / DPR), (height / DPR), scaleX_hist, scaleY_hist, false);
-  drawHistogram($familyHist_white__svg, histData_white, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
-  drawHistogram($familyHist_black__svg, histData_black, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
-  drawHistogram($familyHist_latino__svg, histData_latino, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
+  drawHistogram($familyHist__svg, histData, (familyHist_width / DPR), (height / DPR), scaleX_hist, scaleY_hist, false, 7857);
+  drawHistogram($familyHist_white__svg, histData_white, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true, 4784);
+  drawHistogram($familyHist_black__svg, histData_black, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true, 2716);
+  drawHistogram($familyHist_latino__svg, histData_latino, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true, 467);
   // drawHistogram($familyHist_asian__svg, histData_asian, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
   // drawHistogram($familyHist_multi__svg, histData_multi, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
   // drawHistogram($familyHist_native__svg, histData_native, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
 }
 
-function drawHistogram(svg, data, width, height, xScale, yScale, isSmallMultiple) {
+function drawHistogram(svg, data, width, height, xScale, yScale, isSmallMultiple, sampleSize) {
   // set the xScale domain for each race small multiple individually
   // if(isSmallMultiple) {
   //   xScale.domain([0, d3.max(data, d => d.n)]);
@@ -269,11 +269,22 @@ function drawHistogram(svg, data, width, height, xScale, yScale, isSmallMultiple
     .attr('y', '1em')
     .text('Years in Each Quintile');
 
-  svg
-    .append('text')
-    .attr('x', margin_hist.left)
-    .attr('y', '2.3em')
-    .text('(across x families)');
+  if(isSmallMultiple) {
+    svg
+      .append('text')
+      .attr('x', margin_hist.left)
+      .attr('y', '2.3em')
+      .text(`(across ${commaFmt(sampleSize)} families)`);
+  }
+  else {
+    svg
+      .append('text')
+      .attr('class', 'sampleSizeNumber')
+      .attr('x', margin_hist.left)
+      .attr('y', '2.3em')
+      .text(`(across 1/${commaFmt(sampleSize)} families)`);
+
+  }
 }
 
 function resize() {
@@ -476,7 +487,7 @@ function animate(data, fam_num, ms) {
 
   drawLine(data[fam_num].values, 1);
 
-  updateHistogram(data[fam_num].values, ms);
+  updateHistogram(data[fam_num].values, ms, fam_num);
 }
 
 function drawLine(data, opacity) {
@@ -636,6 +647,11 @@ function updateHistogram(data, time) {
     .duration(time)
     .attr('x', d => scaleX_hist(d.n) + 5)
     .text(d => commaFmt(d.n));
+
+  // update number of families in the label above the histogram
+  $familyHist__svg
+    .select('.sampleSizeNumber')
+    .text(`(across ${commaFmt(fam_num)}/${commaFmt(totalLines)} families)`);
 }
 
 function updateHistScaleX() {
@@ -736,6 +752,10 @@ function replay() {
     .attr('x', 5)
     .text(d => commaFmt(d.n));
 
+  $familyHist__svg
+    .select('.sampleSizeNumber')
+    .text(`(across 1/${commaFmt(totalLines)} families)`);
+
   // restart animation
   fam_num = 1;
   const firstLineLength = dataByFamily[0].values.length;
@@ -777,6 +797,11 @@ function showEnd(countsArray) {
     .duration(500)
     .attr('x', d => scaleX_hist(d.n) + 5)
     .text(d => commaFmt(d.n));
+
+  // also update the label at the top with the total number of families
+  $familyHist__svg
+    .select('.sampleSizeNumber')
+    .text(`(across ${commaFmt(totalLines)}/${commaFmt(totalLines)} families)`);
 }
 
 function snapToNearestPoint(value) {
@@ -784,44 +809,7 @@ function snapToNearestPoint(value) {
   // needed to improve sharpness of lines in canvas
   return Math.round(value);
 }
-/*
-function wrap(text, width) {
-  text.each(function() {
-    const text = d3.select(this);
-    const words = text
-      .text()
-      .split(/\s+/)
-      .reverse();
-    let word;
-    let line = [];
-    let lineNumber = 0;
-    const lineHeight = 1.1; // ems
-    const y = text.attr('y');
-    const dy = 0.3;
-    let tspan = text
-      .text(null)
-      .append('tspan')
-      .attr('x', 0)
-      .attr('y', y)
-      .attr('dy', `${dy}em`);
-    while ((word = words.pop())) {
-      line.push(word);
-      tspan.text(line.join(' '));
-      if (tspan.node().getComputedTextLength() > width) {
-        line.pop();
-        tspan.text(line.join(' '));
-        line = [word];
-        tspan = text
-          .append('tspan')
-          .attr('x', 0)
-          .attr('y', y)
-          .attr('dy', `${++lineNumber * lineHeight + dy}em`)
-          .text(word);
-      }
-    }
-  });
-}
-*/
+
 function init() {
   setup();
 
