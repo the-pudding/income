@@ -108,9 +108,6 @@ function setup() {
 	$guess__vis.selectAll('.selection').attr('cursor', 'auto');
 	$guess__vis.selectAll('.overlay').attr('cursor', 'auto');
 
-	// disable ability to completely redraw the bar anywhere within its lane
-	// $guess__vis.selectAll('.overlay').attr('pointer-events', 'none');
-
 	// set up answer graph
 	$answer__vis = $guess__svg.append('g')
 		.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
@@ -140,7 +137,6 @@ function resize() {
 	// get new dimensions of the container element
 	width = $guess__container.node().offsetWidth - margin.left - margin.right;
 	height = width < 470 ? (width * 0.7) - margin.top - margin.bottom : (width * 0.54) - margin.top - margin.bottom;
-	// height = $guess__container.node().offsetHeight - margin.top - margin.bottom;
 
 	// update scales
 	scaleX.range([0, width]);
@@ -198,7 +194,6 @@ function brushMove() {
     const newShare = Math.ceil(newBarPos[0]); // round to make the numbers nicer for the calculations below
 
     const brushedBar = d3.select(this).select('.selection'); //  gets the node of the bar that was brushed
-    // brushedBar.datum().share = newShare;  // need to update the data bound to the bar in case user clicks the chart and the bar needs to be redrawn in its original position
     const brushedLevel = brushedBar.datum().levels;
     const oldShare = brushedBar.datum().share;
 
@@ -207,14 +202,12 @@ function brushMove() {
 	if(newShare + remainder > 100) {
 		guessData[brushedLevel].share = 100 - remainder;
 		d3.select(this).call($brush.move, function(d) { return [100 - remainder, 0].map(scaleY); });
-		// console.log(guessData);
 		$instruction2.style('visibility', 'visible');
 	}
     // else, update the dataset with the new value and snap the bar to the nearest integer
     else {
 	    guessData[brushedLevel].share = newShare;
 	    d3.select(this).call($brush.move, function(d) { return [newShare, 0].map(scaleY); });
-		// const sum = d3.sum(guessData, d => d.share);
     }
 
 	updateWarningMsg();
@@ -282,8 +275,6 @@ function updateInterpretText() {
 
 	$interpretText.text(interpretation);
 }
-
-// $submitBtn.on('click', showAnswer);
 
 function showAnswer() {
 	$answer__vis.classed('noDisplay', false);

@@ -9,9 +9,6 @@ const $family_smallMultiples__container = $section.select('.family_smallMultiple
 const $familyHist_white__svg = $family_smallMultiples__container.select('svg.familyBars_white_svg');
 const $familyHist_black__svg = $family_smallMultiples__container.select('svg.familyBars_black_svg');
 const $familyHist_latino__svg = $family_smallMultiples__container.select('svg.familyBars_latino_svg');
-// const $familyHist_asian__svg = $family_smallMultiples__container.select('svg.familyBars_asian_svg');
-// const $familyHist_multi__svg = $family_smallMultiples__container.select('svg.familyBars_multi_svg');
-// const $familyHist_native__svg = $family_smallMultiples__container.select('svg.familyBars_native_svg');
 
 const $replay__btn = $section.select('.replay');
 const $skipToEnd__btn = $section.select('.skipToEnd');
@@ -43,7 +40,7 @@ const maxLines = 10; // max number of lines that should appear on the chart at a
 const ms_slow = 500; // how much time should elapse before the next line is drawn during the slow phase of the animation
 const ms_fast = 20; // how much time should elapse during the sped up phase of the animation
 // animation will take: (30 * 1000) + (10 * 1000) + ((7857-10) * 20) = 196,940 ms or 3.28 min to run
-let fam_num = 1;
+let fam_num = 0;
 
 let dataByFamily;
 let totalLines;
@@ -131,27 +128,6 @@ const histData_latino = [
   { quintile: 'Upper Middle', n: 1134, pct: 0.2015283 },
   { quintile: 'Upper', n: 661, pct: 0.1174693 },
 ];
-// const histData_asian = [
-//   { quintile: 'Lower', n: 55, pct: 0.07198953 },
-//   { quintile: 'Lower Middle', n: 124, pct: 0.16230366 },
-//   { quintile: 'Middle', n: 199, pct: 0.26047120 },
-//   { quintile: 'Upper Middle', n: 167, pct: 0.21858639 },
-//   { quintile: 'Upper', n: 219, pct: 0.28664921 },
-// ];
-// const histData_multi = [
-//   { quintile: 'Lower', n: 418, pct: 0.1236686 },
-//   { quintile: 'Lower Middle', n: 615, pct: 0.1819527 },
-//   { quintile: 'Middle', n: 918, pct: 0.2715976 },
-//   { quintile: 'Upper Middle', n: 851, pct: 0.2517751 },
-//   { quintile: 'Upper', n: 578, pct: 0.1710059 },
-// ];
-// const histData_native = [
-//   { quintile: 'Lower', n: 88, pct: 0.1959911 },
-//   { quintile: 'Lower Middle', n: 95, pct: 0.2115813 },
-//   { quintile: 'Middle', n: 114, pct: 0.2538976 },
-//   { quintile: 'Upper Middle', n: 97, pct: 0.2160356 },
-//   { quintile: 'Upper', n: 55, pct: 0.1224944 },
-// ];
 
 function setup() {
   // dimensions
@@ -214,16 +190,9 @@ function setup() {
   drawHistogram($familyHist_white__svg, histData_white, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true, 4784);
   drawHistogram($familyHist_black__svg, histData_black, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true, 2716);
   drawHistogram($familyHist_latino__svg, histData_latino, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true, 467);
-  // drawHistogram($familyHist_asian__svg, histData_asian, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
-  // drawHistogram($familyHist_multi__svg, histData_multi, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
-  // drawHistogram($familyHist_native__svg, histData_native, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
 }
 
 function drawHistogram(svg, data, width, height, xScale, yScale, isSmallMultiple, sampleSize) {
-  // set the xScale domain for each race small multiple individually
-  // if(isSmallMultiple) {
-  //   xScale.domain([0, d3.max(data, d => d.n)]);
-  // }
 
   $familyHist__vis = svg
     .attr('width', width + margin_hist.left + margin_hist.right)
@@ -347,17 +316,9 @@ function resize() {
   resizeHistogram($familyHist_white__svg, histData_white, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
   resizeHistogram($familyHist_black__svg, histData_black, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
   resizeHistogram($familyHist_latino__svg, histData_latino, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
-  // resizeHistogram($familyHist_asian__svg, histData_asian, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
-  // resizeHistogram($familyHist_multi__svg, histData_multi, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
-  // resizeHistogram($familyHist_native__svg, histData_native, familyHist_sm_width, height_sm, scaleX_hist_sm, scaleY_hist_sm, true);
 }
 
 function resizeHistogram(svg, data, width, height, xScale, yScale, isSmallMultiple) {
-  // set the xScale domain for each race small multiple individually
-  // if(isSmallMultiple) {
-  //   xScale.domain([0, d3.max(data, d => d.n)]);
-  // }
-
   // resize svg container
   let hist = svg
     .attr('width', width + margin_hist.left + margin_hist.right)
@@ -458,7 +419,6 @@ function animateLines() {
   tweenTimer.stop(); // make sure first line animation stops in case user navigates off the page
 
   if (fam_num < totalLines) {
-  // if(fam_num < 100) {
     if (fam_num < maxLines) {
       animate(dataByFamily, fam_num, ms_slow);
       timer = setTimeout(animateLines, ms_slow);
@@ -475,8 +435,6 @@ function animate(data, fam_num, ms) {
   // when the next line is drawn, reduce the opacity of previously drawn line and remove the
   // line entirely when ten more lines are drawn afterwards
   $context.clearRect(0, 0, $canvas.attr('width'), $canvas.attr('height'));
-
-  // addQuintileBackground();
 
   // for the first few lines, first fade out the nine previously drawn lines
   if (fam_num < maxLines) {
@@ -574,26 +532,6 @@ function addQuintileBackground() {
     (margin.top * DPR) + height + (margin.bottom * DPR) - 2
   );
 
-  // $context.beginPath();
-  // $context.moveTo(snapToNearestPoint(margin.left), margin.top + height);
-  // $context.lineTo(snapToNearestPoint(margin.left), margin.top + height + 19);
-  // $context.lineWidth = 1;
-  // $context.strokeStyle = '#828282';
-  // $context.stroke();
-
-  // $context.beginPath();
-  // $context.moveTo(
-  //   snapToNearestPoint(margin.left + familyLines_width - 2),
-  //   margin.top + height
-  // );
-  // $context.lineTo(
-  //   snapToNearestPoint(margin.left + familyLines_width - 2),
-  //   margin.top + height + 19
-  // );
-  // $context.lineWidth = 1;
-  // $context.strokeStyle = '#828282';
-  // $context.stroke();
-
   quintileNames.forEach((d, i) => {
     const $gradient = $context_bg.createLinearGradient(
       (margin.left * DPR),
@@ -651,7 +589,7 @@ function updateHistogram(data, time) {
   // update number of families in the label above the histogram
   $familyHist__svg
     .select('.sampleSizeNumber')
-    .text(`(across ${commaFmt(fam_num)}/${commaFmt(totalLines)} families)`);
+    .text(`(across ${commaFmt(fam_num + 1)}/${commaFmt(totalLines)} families)`);
 }
 
 function updateHistScaleX() {
@@ -770,7 +708,6 @@ function showEnd(countsArray) {
   clearTimeout(timer);
 
   $context.clearRect(0, 0, $canvas.attr('width'), $canvas.attr('height'));
-  // addQuintileBackground();
 
   scaleX_hist.domain([
     0,
@@ -828,16 +765,6 @@ function init() {
       const counts = countFrequency(result);
       const countsArray = objToArray(counts);
 
-      // append axis for debugging purposes
-      // $familyLines__vis.append('g')
-      //  .attr('class', 'axis axis--y')
-      //  .call(d3.axisLeft(scaleY_line));
-
-      // $familyLines__vis.append('g')
-      //  .attr('class', 'axis axis--x')
-      //  .attr('transform', 'translate(0,' + height + ')')
-      //  .call(d3.axisBottom(scaleX_line));
-
       addQuintileBackground();
 
       const firstLineLength = dataByFamily[0].values.length;
@@ -848,7 +775,6 @@ function init() {
         enter() {
           drawFirstLine();
           timer = setTimeout(animateLines, (firstLineLength + 1) * ms_slow);
-          // timer = setTimeout(animateLines, 0);
         },
         once: true,
       });
